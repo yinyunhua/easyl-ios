@@ -74,7 +74,20 @@ struct SourceListView: View {
             Button(store.isImporting ? "导入中…" : "导入") {
                 let text = input
                 input = ""
-                Task { _ = await store.importScript(from: text) }
+                Task {
+                    let lines = text
+                        .components(separatedBy: .newlines)
+                        .map { $0.trimmingCharacters(in: .whitespaces) }
+                        .filter { !$0.isEmpty }
+                    // 一次粘贴多行 URL = 批量导入（多仓订阅）
+                    if lines.count > 1 && lines.allSatisfy({ $0.hasPrefix("http") }) {
+                        for line in lines {
+                            _ = await store.importScript(from: line)
+                        }
+                    } else {
+                        _ = await store.importScript(from: text)
+                    }
+                }
             }
             Button("取消", role: .cancel) {}
         }

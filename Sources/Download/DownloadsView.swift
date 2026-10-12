@@ -49,6 +49,9 @@ struct DownloadsView: View {
             .listStyle(.plain)
             .navigationTitle("下载")
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    NavigationLink { LocalMediaView() } label: { Image(systemName: "folder") }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showAdd = true } label: { Image(systemName: "plus") }
                 }

@@ -105,6 +105,11 @@ struct SettingsView: View {
                 }
 
                 Section("存储") {
+                    NavigationLink {
+                        LocalMediaView()
+                    } label: {
+                        Label("本地视频（导入 / 播放手机里的文件）", systemImage: "folder")
+                    }
                     Button("清理脚本缓存") {
                         clearScriptCache()
                         toast = "脚本缓存已清理"
