@@ -125,12 +125,12 @@ final class PlayerModel: ObservableObject {
         guard let source, let danmakuId, !danmakuId.isEmpty else { return }
         isLoadingDanmaku = true
 
-        Task { [weak self] in
+        // 单层 @MainActor 闭包：class 用 [weak self] 会产生"可变捕获"，
+        // 再放进嵌套的并发闭包(MainActor.run)里引用会触发编译错误
+        Task { @MainActor in
             let list = (try? await ScriptService.shared.danmaku(source, id: danmakuId, name: name)) ?? []
-            await MainActor.run {
-                self?.comments = list
-                self?.isLoadingDanmaku = false
-            }
+            self.comments = list
+            self.isLoadingDanmaku = false
         }
     }
 }
