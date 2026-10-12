@@ -120,6 +120,11 @@ struct SettingsView: View {
                     InfoRow("版本", Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0")
                     InfoRow("Bundle ID", Bundle.main.bundleIdentifier ?? "-")
                     NavigationLink {
+                        DiagnosticsView()
+                    } label: {
+                        Label("自检（资源 / 网络 / 源 / 日志）", systemImage: "stethoscope")
+                    }
+                    NavigationLink {
                         SignatureView()
                     } label: {
                         Label("签名状态（7 天倒计时）", systemImage: "checkmark.seal")

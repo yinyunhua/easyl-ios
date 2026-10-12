@@ -52,7 +52,9 @@ final class ScriptEngine {
         _ = context.evaluateScript(source.code)
         if let exception = context.exception {
             context.exception = nil
-            throw ScriptError.evaluate(exception.toString() ?? "脚本语法错误")
+            let text = exception.toString() ?? "脚本语法错误"
+            LogBus.shared.log("脚本加载失败: \(text)", source: source.id)
+            throw ScriptError.evaluate(text)
         }
     }
 
@@ -64,7 +66,7 @@ final class ScriptEngine {
         let sourceHeaders = source.headers
 
         let log: @convention(block) (String) -> Void = { message in
-            NSLog("[EasylScript] %@", message)
+            LogBus.shared.log(message, source: sourceId)
         }
 
         let request: @convention(block) (String, String, String, String, Double) -> String = { method, url, headersJson, body, seconds in

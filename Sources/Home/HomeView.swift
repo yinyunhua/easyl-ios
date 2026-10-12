@@ -7,6 +7,7 @@ struct HomeView: View {
     @State private var sections: [HomeSection] = []
     @State private var isLoading = false
     @State private var errorText: String?
+    @State private var showDirectPlay = false
 
     private var source: ScriptSource? {
         if let currentKey, let found = store.source(for: currentKey), found.enabled {
@@ -31,7 +32,13 @@ struct HomeView: View {
             .navigationTitle("首页")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) { sourceMenu }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { showDirectPlay = true } label: {
+                        Image(systemName: "link")
+                    }
+                }
             }
+            .sheet(isPresented: $showDirectPlay) { DirectPlayView() }
             .refreshable { await load() }
             .task(id: source?.id) { await load() }
             .navigationDestination(for: MediaItem.self) { item in
@@ -120,9 +127,11 @@ struct HomeView: View {
         do {
             let result = try await ScriptService.shared.home(source)
             sections = result
+            LogBus.shared.log("home() 成功：\(result.count) 个栏目", source: source.id)
             if result.isEmpty { errorText = "该源首页没有返回内容" }
         } catch {
             errorText = error.localizedDescription
+            LogBus.shared.log("home() 失败：\(error.localizedDescription)", source: source.id)
         }
         isLoading = false
     }

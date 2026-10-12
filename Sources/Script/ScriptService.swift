@@ -51,6 +51,7 @@ final class ScriptService {
                 do {
                     finish(.success(try body(entry.engine)))
                 } catch {
+                    LogBus.shared.log("调用失败: \(error.localizedDescription)", source: source.id)
                     finish(.failure(error))
                 }
             }
