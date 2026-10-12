@@ -1,0 +1,47 @@
+name: EasylForIOS
+options:
+  bundleIdPrefix: com.example
+  createIntermediateGroups: true
+  deploymentTarget:
+    iOS: "16.0"
+
+settings:
+  base:
+    MARKETING_VERSION: "1.7.1"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "5.9"
+    IPHONEOS_DEPLOYMENT_TARGET: "16.0"
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+    ALWAYS_SEARCH_USER_PATHS: NO
+
+targets:
+  EasylForIOS:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources
+      - path: Resources
+        excludes:
+          - "Info.plist"
+    settings:
+      base:
+        PRODUCT_NAME: EasylForIOS
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.easyl
+        INFOPLIST_FILE: Resources/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        TARGETED_DEVICE_FAMILY: "1"
+        SUPPORTS_MACCATALYST: NO
+        SWIFT_EMIT_LOC_STRINGS: NO
+
+schemes:
+  EasylForIOS:
+    build:
+      targets:
+        EasylForIOS: all
+    run:
+      config: Debug
+    archive:
+      config: Release
