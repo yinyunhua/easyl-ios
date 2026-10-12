@@ -14,26 +14,46 @@ jobs:
     runs-on: macos-14
     steps:
       - name: Checkout
+        id: checkout
         uses: actions/checkout@v4
 
-      - name: Show toolchain
+      - name: Environment probe
+        id: env
         run: |
-          xcodebuild -version
-          swift --version
-          df -h / | tail -1
+          set -x
+          sw_vers || true
+          uname -m || true
+          xcode-select -p || true
+          xcodebuild -version || true
+          swift --version || true
+          df -h / || true
+          echo "PATH=$PATH"
 
-      - name: Install XcodeGen
+      - name: Install XcodeGen (official release, no Homebrew)
+        id: xcodegen
         run: |
-          export HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1
-          brew install xcodegen || (echo "first attempt failed, retrying in 15s" && sleep 15 && brew install xcodegen)
+          set -euxo pipefail
+          cd "$RUNNER_TEMP"
+          curl -fsSL -o xcodegen.zip https://github.com/yonaskolb/XcodeGen/releases/download/2.46.0/xcodegen.zip
+          unzip -q -o xcodegen.zip -d xcodegen-dist
+          sudo bash xcodegen-dist/xcodegen/install.sh
+          export PATH="/usr/local/bin:$PATH"
           xcodegen --version
+          if ! command -v xcodegen >/dev/null 2>&1; then
+            echo "release install failed, falling back to brew"
+            brew install xcodegen
+          fi
 
       - name: Generate Xcode project
+        id: project
         run: |
+          set -o pipefail
+          export PATH="/usr/local/bin:$PATH"
           xcodegen generate 2>&1 | tee xcodegen.log
           xcodebuild -list -project EasylForIOS.xcodeproj
 
       - name: Build app (unsigned)
+        id: build
         run: |
           set -o pipefail
           xcodebuild \
@@ -47,19 +67,27 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             build 2>&1 | tee xcodebuild.log
 
-      - name: Diagnose build errors
+      - name: Diagnose failures
         if: failure()
         run: |
-          echo "===== error: lines (max 60) ====="
-          grep -n "error:" xcodebuild.log | head -60 || echo "(no 'error:' line in log)"
-          echo ""
-          echo "===== last 80 lines of log ====="
-          tail -80 xcodebuild.log || true
-          echo ""
-          echo "::error::build failed, key error lines below"
-          grep "error:" xcodebuild.log | head -5 | while IFS= read -r line; do echo "::error::$line"; done
+          echo "=== step outcomes ==="
+          echo "env=${{ steps.env.outcome }} xcodegen=${{ steps.xcodegen.outcome }} project=${{ steps.project.outcome }} build=${{ steps.build.outcome }}"
+          echo "=== files ==="
+          ls -la || true
+          for f in xcodegen.log xcodebuild.log; do
+            if [ -f "$f" ]; then
+              echo "=== tail -40 of $f ==="
+              tail -40 "$f" || true
+              echo "::error::----- $f (last lines) -----"
+              tail -6 "$f" | while IFS= read -r line; do echo "::error::$line"; done
+            else
+              echo "::error::$f 不存在 -> 失败发生在生成/编译之前，请查看上一步的完整输出"
+            fi
+          done
+          echo "=== build products ==="
+          ls -la build/Build/Products/ 2>/dev/null || echo "(no products dir)"
 
-      - name: Upload build log
+      - name: Upload logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
