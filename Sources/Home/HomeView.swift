@@ -136,12 +136,11 @@ struct PosterCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             AsyncImage(url: item.posterURL) { phase in
-                switch phase {
-                case .success(let image):
+                if let image = phase.image {
                     image.resizable().aspectRatio(contentMode: .fill)
-                case .failure:
+                } else if phase.error != nil {
                     placeholder
-                default:
+                } else {
                     placeholder.overlay(ProgressView().scaleEffect(0.6))
                 }
             }

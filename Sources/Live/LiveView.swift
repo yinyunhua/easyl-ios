@@ -179,7 +179,7 @@ struct RemoteLogo: View {
 
     var body: some View {
         AsyncImage(url: url.flatMap { URL(string: $0) }) { phase in
-            if case .success(let image) = phase {
+            if let image = phase.image {
                 image.resizable().aspectRatio(contentMode: .fit)
             } else {
                 Color(uiColor: .secondarySystemBackground)

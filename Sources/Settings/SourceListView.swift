@@ -132,7 +132,7 @@ struct SourceDetailView: View {
             }
 
             Section("脚本内容") {
-                Text(source.code.prefix(4000) + (source.code.count > 4000 ? "\n…（截断显示）" : ""))
+                Text(String(source.code.prefix(4000)) + (source.code.count > 4000 ? "\n…（截断显示）" : ""))
                     .font(.system(size: 11, design: .monospaced))
                     .textSelection(.enabled)
             }

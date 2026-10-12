@@ -87,7 +87,7 @@ struct DetailView: View {
     private var header: some View {
         HStack(alignment: .top, spacing: 14) {
             AsyncImage(url: item.posterURL) { phase in
-                if case .success(let image) = phase {
+                if let image = phase.image {
                     image.resizable().aspectRatio(contentMode: .fill)
                 } else {
                     Color(uiColor: .secondarySystemBackground)
@@ -122,7 +122,8 @@ struct DetailView: View {
     private var linePicker: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                ForEach(Array(lines.enumerated()), id: \.offset) { index, line in
+                ForEach(lines.indices, id: \.self) { index in
+                    let line = lines[index]
                     Button {
                         lineIndex = index
                     } label: {
@@ -144,7 +145,8 @@ struct DetailView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("选集").font(.headline)
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 78), spacing: 8)], spacing: 8) {
-                ForEach(Array(episodes.enumerated()), id: \.element.uniqueKey) { index, episode in
+                ForEach(episodes.indices, id: \.self) { index in
+                    let episode = episodes[index]
                     Button {
                         Task { await play(episode: episode, index: index) }
                     } label: {

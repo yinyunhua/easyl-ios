@@ -95,7 +95,7 @@ struct MediaRow: View {
     var body: some View {
         HStack(spacing: 12) {
             AsyncImage(url: item.posterURL) { phase in
-                if case .success(let image) = phase {
+                if let image = phase.image {
                     image.resizable().aspectRatio(contentMode: .fill)
                 } else {
                     Color(uiColor: .secondarySystemBackground)
@@ -125,7 +125,7 @@ struct DoubanRow: View {
     var body: some View {
         HStack(spacing: 12) {
             AsyncImage(url: item.coverURL) { phase in
-                if case .success(let image) = phase {
+                if let image = phase.image {
                     image.resizable().aspectRatio(contentMode: .fill)
                 } else {
                     Color(uiColor: .secondarySystemBackground)

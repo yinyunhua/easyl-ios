@@ -1,7 +1,6 @@
 import Foundation
 import Combine
 
-@MainActor
 final class SourceStore: ObservableObject {
     @Published private(set) var scripts: [ScriptSource] = []
     @Published var isImporting = false

@@ -150,10 +150,9 @@ struct SettingsView: View {
                         .padding(.vertical, 8)
                         .background(.regularMaterial, in: Capsule())
                         .padding(.bottom, 24)
-                        .onAppear {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
-                                self.toast = nil
-                            }
+                        .task {
+                            try? await Task.sleep(nanoseconds: 1_600_000_000)
+                            toast = nil
                         }
                 }
             }

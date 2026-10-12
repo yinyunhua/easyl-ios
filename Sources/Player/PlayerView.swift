@@ -144,7 +144,8 @@ struct PlayerView: View {
     private var episodeSheet: some View {
         NavigationStack {
             List {
-                ForEach(Array(episodes.enumerated()), id: \.offset) { index, episode in
+                ForEach(episodes.indices, id: \.self) { index in
+                    let episode = episodes[index]
                     Button {
                         showEpisodes = false
                         onSelectEpisode?(index)
@@ -173,9 +174,12 @@ struct PlayerView: View {
     // MARK: - 逻辑
 
     private func start() {
-        model.onFinished = { [episodes, currentIndex, onSelectEpisode] in
-            guard AppSettings.autoPlayNext, let currentIndex, currentIndex + 1 < episodes.count else { return }
-            onSelectEpisode?(currentIndex + 1)
+        model.onFinished = { [weak self] in
+            guard let self else { return }
+            guard AppSettings.autoPlayNext,
+                  let index = self.currentIndex,
+                  index + 1 < self.episodes.count else { return }
+            self.onSelectEpisode?(index + 1)
         }
         model.speed = AppSettings.defaultSpeed
         model.load(urlString: urlString, headers: headers, title: title)

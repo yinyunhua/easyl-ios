@@ -185,7 +185,7 @@ final class ScriptEngine {
             throw ScriptError.noEntryPoint(functionNames.joined(separator: " / "))
         }
 
-        let values: [JSValue] = arguments.map { JSValue(object: $0, in: context) }
+        let values: [JSValue] = arguments.compactMap { JSValue(object: $0, in: context) }
         let result = function.call(withArguments: values)
 
         if let exception = context.exception {
