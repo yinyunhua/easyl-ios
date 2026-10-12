@@ -174,12 +174,15 @@ struct PlayerView: View {
     // MARK: - 逻辑
 
     private func start() {
-        model.onFinished = { [weak self] in
-            guard let self else { return }
+        // 注意：View 是 struct，不能 [weak self]；这里直接捕获需要的值
+        let episodesSnapshot = episodes
+        let currentIndexSnapshot = currentIndex
+        let selectHandler = onSelectEpisode
+        model.onFinished = {
             guard AppSettings.autoPlayNext,
-                  let index = self.currentIndex,
-                  index + 1 < self.episodes.count else { return }
-            self.onSelectEpisode?(index + 1)
+                  let index = currentIndexSnapshot,
+                  index + 1 < episodesSnapshot.count else { return }
+            selectHandler?(index + 1)
         }
         model.speed = AppSettings.defaultSpeed
         model.load(urlString: urlString, headers: headers, title: title)

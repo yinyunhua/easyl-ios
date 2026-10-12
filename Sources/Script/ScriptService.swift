@@ -73,7 +73,7 @@ final class ScriptService {
 
     func category(_ source: ScriptSource, tid: String, page: Int) async throws -> [MediaItem] {
         let json = try await perform(source, timeout: 30) { engine in
-            try engine.call(functionNames: ["category", "categoryContent", "getCategory"], arguments: [tid, page, [:]])
+            try engine.call(functionNames: ["category", "categoryContent", "getCategory"], arguments: [tid, page, [String: Any]()])
         }
         guard let json else { throw ScriptError.emptyResult("category") }
         return Self.parseItems(json, source: source)
