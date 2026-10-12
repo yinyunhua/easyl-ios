@@ -10,6 +10,7 @@ permissions:
 
 env:
   CI_TRACE: ${{ github.workspace }}/ci-trace.txt
+  XCODEGEN_VERSION: "2.42.0"
 
 jobs:
   build:
@@ -29,21 +30,20 @@ jobs:
           xcode-select -p || true
           xcodebuild -version || true
           xcrun --sdk iphoneos --show-sdk-version || true
-          df -h / || true
 
-      - name: Install XcodeGen (official release)
+      - name: Install XcodeGen (pinned 2.42.0, Xcode 15 compatible)
         id: xcodegen
         run: |
           set -Euxo pipefail
           trap 'echo "[install-xcodegen] FAILED at: $BASH_COMMAND" >> "$CI_TRACE"' ERR
           cd "$RUNNER_TEMP"
-          curl -fsSL -o xcodegen.zip https://github.com/yonaskolb/XcodeGen/releases/download/2.46.0/xcodegen.zip
+          curl -fsSL -o xcodegen.zip "https://github.com/yonaskolb/XcodeGen/releases/download/${XCODEGEN_VERSION}/xcodegen.zip"
           unzip -q -o xcodegen.zip -d xcodegen-dist
           sudo bash xcodegen-dist/xcodegen/install.sh
           /usr/local/bin/xcodegen --version
           echo "/usr/local/bin" >> "$GITHUB_PATH"
 
-      - name: Generate Xcode project
+      - name: Generate and validate project
         id: project
         run: |
           set +e
@@ -51,19 +51,31 @@ jobs:
           code=$?
           cat xcodegen.log
           echo "xcodegen exit code: $code"
-          if [ -d EasylForIOS.xcodeproj ]; then
-            echo "project directory exists -> continue regardless of exit code"
-            exit 0
-          fi
-          echo "::error::xcodegen failed and produced no project (exit $code)"
-          exit "$code"
 
-      - name: Inspect project (non-fatal)
-        id: inspect
-        run: |
-          ls -la EasylForIOS.xcodeproj || true
-          xcodebuild -list -project EasylForIOS.xcodeproj || true
-          xcodebuild -showBuildSettings -project EasylForIOS.xcodeproj -target EasylForIOS 2>&1 | head -30 || true
+          if [ ! -d EasylForIOS.xcodeproj ]; then
+            echo "::error::xcodegen produced no project (exit $code)"
+            exit 1
+          fi
+
+          PBX=EasylForIOS.xcodeproj/project.pbxproj
+          echo "pbxproj size: $(wc -c < "$PBX") bytes"
+          objver=$(grep -m1 -o 'objectVersion = [0-9]*;' "$PBX" | grep -o '[0-9]*')
+          echo "objectVersion = ${objver:-unknown}"
+          plutil -lint "$PBX" || true
+
+          if [ -n "$objver" ] && [ "$objver" -gt 60 ]; then
+            echo "::error::objectVersion $objver is too new for the Xcode on this runner"
+            exit 1
+          fi
+
+          # 硬校验：Xcode 必须读得懂这个工程（之前这条被我加了 || true，掩盖了真实错误）
+          if ! xcodebuild -list -project EasylForIOS.xcodeproj > list.log 2>&1; then
+            echo "::error::xcodebuild cannot read the generated project"
+            echo "----- list.log -----"; cat list.log
+            echo "----- project.pbxproj head -----"; head -40 "$PBX"
+            exit 1
+          fi
+          cat list.log
 
       - name: Build app (unsigned)
         id: build
@@ -88,25 +100,14 @@ jobs:
       - name: Diagnose failures
         if: failure()
         run: |
-          echo "=== step outcomes ==="
-          echo "env=${{ steps.env.outcome }} xcodegen=${{ steps.xcodegen.outcome }} project=${{ steps.project.outcome }} inspect=${{ steps.inspect.outcome }} build=${{ steps.build.outcome }}"
-          echo "::error::failure attribution: env=${{ steps.env.outcome }} xcodegen=${{ steps.xcodegen.outcome }} project=${{ steps.project.outcome }} inspect=${{ steps.inspect.outcome }} build=${{ steps.build.outcome }}"
-          if [ -f "$CI_TRACE" ]; then
-            echo "=== ci-trace ==="
-            cat "$CI_TRACE"
-            while IFS= read -r line; do echo "::error::$line"; done < "$CI_TRACE"
-          fi
-          if [ -f build-exit.txt ]; then
-            echo "::error::xcodebuild exit code: $(cat build-exit.txt)"
-          fi
-          for f in xcodegen.log xcodebuild.log; do
+          echo "::error::failure attribution: env=${{ steps.env.outcome }} xcodegen=${{ steps.xcodegen.outcome }} project=${{ steps.project.outcome }} build=${{ steps.build.outcome }}"
+          [ -f "$CI_TRACE" ] && cat "$CI_TRACE" && while IFS= read -r l; do echo "::error::$l"; done < "$CI_TRACE"
+          [ -f build-exit.txt ] && echo "::error::xcodebuild exit code: $(cat build-exit.txt)"
+          for f in xcodegen.log xcodebuild.log list.log; do
             if [ -f "$f" ]; then
-              echo "=== $f : error lines ==="
-              grep -n "error:" "$f" | head -40 || echo "(no error: lines)"
-              echo "=== $f : tail -25 ==="
-              tail -25 "$f"
+              echo "=== $f (tail -25) ==="; tail -25 "$f"
             else
-              echo "::error::$f missing (failure happened before this log was created)"
+              echo "::error::$f not created"
             fi
           done
           if [ -f xcodebuild.log ]; then
@@ -114,11 +115,8 @@ jobs:
             echo "::error::xcodebuild error lines: ${count:-0}"
             if [ "${count:-0}" != "0" ]; then
               grep "error:" xcodebuild.log | head -20 | while IFS= read -r line; do echo "::error::$line"; done
-            else
-              tail -12 xcodebuild.log | while IFS= read -r line; do echo "::error::$line"; done
             fi
           fi
-          ls -la build/Build/Products/ 2>/dev/null || true
 
       - name: Upload logs
         if: always()
@@ -128,6 +126,7 @@ jobs:
           path: |
             xcodebuild.log
             xcodegen.log
+            list.log
             ci-trace.txt
           if-no-files-found: ignore
           retention-days: 14
