@@ -143,8 +143,8 @@ struct SettingsView: View {
                 Button("取消", role: .cancel) {}
             }
             .overlay(alignment: .bottom) {
-                if let toast {
-                    Text(toast)
+                if let message = toast {
+                    Text(message)
                         .font(.footnote)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 8)
