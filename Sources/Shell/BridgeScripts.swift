@@ -349,514 +349,514 @@ enum BridgeScripts {
         let hosts = ownHosts.map { sanitize($0) }.filter { !$0.isEmpty }
         let hostsJSON = "[" + hosts.map { "'\($0)'" }.joined(separator: ",") + "]"
         return ##"""
-(function(){
-  try{
-    if(window.__HG_PATCH_V2__){return;}
-    window.__HG_PATCH_V2__=true;
-    window.HGApp=window.HGApp||{};
-    window.HGApp.__patchIos='v2.1';
-
-    var OWN_HOSTS=\##(hostsJSON);
-
-    function extraAds(){
-      try{ return window.__HG_EXTRA_ADS__===undefined?true:!!window.__HG_EXTRA_ADS__; }catch(e){ return true; }
-    }
-    function playerExtra(){
-      try{ return window.__HG_PLAYER_EXTRA__===undefined?true:!!window.__HG_PLAYER_EXTRA__; }catch(e){ return true; }
-    }
-
-    // ==================== 域名判定 ====================
-    function own(h){
-      if(!h){return true;}
-      h=String(h).toLowerCase();
-      if(h===String(location.host||'').toLowerCase()){return true;}
-      for(var i=0;i<OWN_HOSTS.length;i++){
-        var o=String(OWN_HOSTS[i]).toLowerCase();
-        if(h===o){return true;}
-        if(h.length>o.length&&h.slice(-(o.length+1))==='.'+o){return true;}
-      }
-      return false;
-    }
-    function hostOf(u){
-      try{
-        var m=/^(?:[a-z][a-z0-9+.\-]*:)?\/\/([^\/\?#]+)/i.exec(String(u||''));
-        if(!m){return '';}
-        return m[1].split('@').pop().split(':')[0].toLowerCase();
-      }catch(e){return '';}
-    }
-    function isExternal(u){
-      var s=String(u||'');
-      if(s.indexOf('://')<0&&s.indexOf('//')!==0){
-        return /^[a-z][a-z0-9+.\-]*:\/\//i.test(s)||s.indexOf('package:')===0||s.indexOf('scheme=')>=0;
-      }
-      var h=hostOf(s);
-      return !!h&&!own(h);
-    }
-
-    // ==================== 广告字段清理 ====================
-    var SAFE_KEYS=['icons','banners','strip','ads','ad_list','adlist','ad_list_v2','advertisement','advertisements',
-                   'promo','promos','promotion','promotions','recommend_apps','hot_apps','download_apps','quick_apps',
-                   'nav_apps','app_icons','splash_ads','float_ads','popup_ads'];
-    var SUSPECT_KEYS=['links','apps','app_list','applist','nav','navs','tabs','blocks','items','list','entries','grid','quick'];
-    var ICON_KEYS=['icon','logo','img','image','cover','pic','thumb','icon_url','logo_url','image_url','iconUrl','logoUrl'];
-    var LINK_KEYS=['url','link','href','jump','jump_url','target','target_url','scheme','scheme_url','package','package_name',
-                   'pkg','apk','download','download_url','android_url','ios_url','deeplink','deeplink_url','open_url'];
-
-    function firstKey(o,keys){
-      if(!o||typeof o!=='object'||Array.isArray(o)){return null;}
-      for(var i=0;i<keys.length;i++){
-        if(Object.prototype.hasOwnProperty.call(o,keys[i])){
-          var v=o[keys[i]];
-          if(v&&typeof v==='string'){return keys[i];}
-        }
-      }
-      return null;
-    }
-    function looksLikePromo(o){
-      try{
-        if(!o||typeof o!=='object'||Array.isArray(o)){return false;}
-        var ik=firstKey(o,ICON_KEYS), lk=firstKey(o,LINK_KEYS);
-        if(!ik||!lk){return false;}
-        return isExternal(o[lk]);
-      }catch(e){return false;}
-    }
-    function promoRatio(list){
-      if(!Array.isArray(list)||!list.length){return 0;}
-      var n=0;
-      for(var i=0;i<list.length;i++){ if(looksLikePromo(list[i])){n++;} }
-      return n/list.length;
-    }
-    function cleanList(list){
-      if(!Array.isArray(list)||list.length<4){return false;}
-      if(promoRatio(list)>=0.5){ list.length=0; return true; }
-      return false;
-    }
-    function deepClean(o,seen){
-      try{
-        if(!o||typeof o!=='object'){return o;}
-        seen=seen||[];
-        if(seen.indexOf(o)>=0){return o;}
-        seen.push(o);
-        if(Array.isArray(o)){
-          if(cleanList(o)){return o;}
-          for(var i=0;i<o.length;i++){ deepClean(o[i],seen); }
-          return o;
-        }
-        if(extraAds()){
-          for(var k=0;k<SAFE_KEYS.length;k++){
-            var key=SAFE_KEYS[k];
-            if(!Object.prototype.hasOwnProperty.call(o,key)){continue;}
-            var v=o[key];
-            if(Array.isArray(v)){o[key]=[];}
-            else if(v&&typeof v==='object'){o[key]={};}
-          }
-          for(var s=0;s<SUSPECT_KEYS.length;s++){
-            var sk=SUSPECT_KEYS[s];
-            if(!Object.prototype.hasOwnProperty.call(o,sk)){continue;}
-            var sv=o[sk];
-            if(Array.isArray(sv)&&cleanList(sv)){continue;}
-          }
-        }
-        for(var kk in o){
-          if(!Object.prototype.hasOwnProperty.call(o,kk)){continue;}
-          var vv=o[kk];
-          if(vv&&typeof vv==='object'){deepClean(vv,seen);}
-        }
-      }catch(e){}
-      return o;
-    }
-
-    function isJsonUrl(u){
-      u=String(u||'');
-      if(!u){return false;}
-      if(/\/api\/app\//.test(u)){return true;}
-      if(/\/app\//.test(u)){return true;}
-      if(/\/api\//.test(u)){return true;}
-      if(/googlexml|00api-agy5u|huge1-7wnjsk|huge2-2hxu9|ihgtv-qa7pt2/.test(u)){return true;}
-      return false;
-    }
-    function scrubJson(data){
-      if(!data||typeof data!=='object'){return data;}
-      deepClean(data);
-      return data;
-    }
-    function rebuildJson(res,data){
-      try{
-        return new Response(JSON.stringify(data),{status:res.status,statusText:res.statusText,
-          headers:{'Content-Type':'application/json; charset=utf-8'}});
-      }catch(e){
-        return new Response(JSON.stringify(data),{status:200,headers:{'Content-Type':'application/json; charset=utf-8'}});
-      }
-    }
-
-    if(window.fetch){
-      var innerFetch=window.fetch.bind(window);
-      window.fetch=function(input,init){
-        var url=(typeof input==='string')?input:((input&&input.url)||'');
-        return innerFetch(input,init).then(function(res){
+        (function(){
           try{
-            if(!extraAds()||!isJsonUrl(url)){return res;}
-            var ct=(res.headers&&res.headers.get)?(res.headers.get('content-type')||''):'';
-            if(ct.indexOf('json')<0){return res;}
-            return res.clone().json().then(function(data){
-              return rebuildJson(res,scrubJson(data));
-            }).catch(function(){return res;});
-          }catch(e){return res;}
-        });
-      };
-    }
-    if(window.XMLHttpRequest){
-      var OX2=window.XMLHttpRequest;
-      var OP2=OX2.prototype.open, OS2=OX2.prototype.send;
-      OX2.prototype.open=function(m,u){this.__hg_url2=u;return OP2.apply(this,arguments);};
-      OX2.prototype.send=function(){
-        var self=this;
-        var u=self.__hg_url2||'';
-        if(extraAds()&&isJsonUrl(u)){
-          self.addEventListener('readystatechange',function(){
+            if(window.__HG_PATCH_V2__){return;}
+            window.__HG_PATCH_V2__=true;
+            window.HGApp=window.HGApp||{};
+            window.HGApp.__patchIos='v2.1';
+
+            var OWN_HOSTS=\##(hostsJSON);
+
+            function extraAds(){
+              try{ return window.__HG_EXTRA_ADS__===undefined?true:!!window.__HG_EXTRA_ADS__; }catch(e){ return true; }
+            }
+            function playerExtra(){
+              try{ return window.__HG_PLAYER_EXTRA__===undefined?true:!!window.__HG_PLAYER_EXTRA__; }catch(e){ return true; }
+            }
+
+            // ==================== 域名判定 ====================
+            function own(h){
+              if(!h){return true;}
+              h=String(h).toLowerCase();
+              if(h===String(location.host||'').toLowerCase()){return true;}
+              for(var i=0;i<OWN_HOSTS.length;i++){
+                var o=String(OWN_HOSTS[i]).toLowerCase();
+                if(h===o){return true;}
+                if(h.length>o.length&&h.slice(-(o.length+1))==='.'+o){return true;}
+              }
+              return false;
+            }
+            function hostOf(u){
+              try{
+                var m=/^(?:[a-z][a-z0-9+.\-]*:)?\/\/([^\/\?#]+)/i.exec(String(u||''));
+                if(!m){return '';}
+                return m[1].split('@').pop().split(':')[0].toLowerCase();
+              }catch(e){return '';}
+            }
+            function isExternal(u){
+              var s=String(u||'');
+              if(s.indexOf('://')<0&&s.indexOf('//')!==0){
+                return /^[a-z][a-z0-9+.\-]*:\/\//i.test(s)||s.indexOf('package:')===0||s.indexOf('scheme=')>=0;
+              }
+              var h=hostOf(s);
+              return !!h&&!own(h);
+            }
+
+            // ==================== 广告字段清理 ====================
+            var SAFE_KEYS=['icons','banners','strip','ads','ad_list','adlist','ad_list_v2','advertisement','advertisements',
+                           'promo','promos','promotion','promotions','recommend_apps','hot_apps','download_apps','quick_apps',
+                           'nav_apps','app_icons','splash_ads','float_ads','popup_ads'];
+            var SUSPECT_KEYS=['links','apps','app_list','applist','nav','navs','tabs','blocks','items','list','entries','grid','quick'];
+            var ICON_KEYS=['icon','logo','img','image','cover','pic','thumb','icon_url','logo_url','image_url','iconUrl','logoUrl'];
+            var LINK_KEYS=['url','link','href','jump','jump_url','target','target_url','scheme','scheme_url','package','package_name',
+                           'pkg','apk','download','download_url','android_url','ios_url','deeplink','deeplink_url','open_url'];
+
+            function firstKey(o,keys){
+              if(!o||typeof o!=='object'||Array.isArray(o)){return null;}
+              for(var i=0;i<keys.length;i++){
+                if(Object.prototype.hasOwnProperty.call(o,keys[i])){
+                  var v=o[keys[i]];
+                  if(v&&typeof v==='string'){return keys[i];}
+                }
+              }
+              return null;
+            }
+            function looksLikePromo(o){
+              try{
+                if(!o||typeof o!=='object'||Array.isArray(o)){return false;}
+                var ik=firstKey(o,ICON_KEYS), lk=firstKey(o,LINK_KEYS);
+                if(!ik||!lk){return false;}
+                return isExternal(o[lk]);
+              }catch(e){return false;}
+            }
+            function promoRatio(list){
+              if(!Array.isArray(list)||!list.length){return 0;}
+              var n=0;
+              for(var i=0;i<list.length;i++){ if(looksLikePromo(list[i])){n++;} }
+              return n/list.length;
+            }
+            function cleanList(list){
+              if(!Array.isArray(list)||list.length<4){return false;}
+              if(promoRatio(list)>=0.5){ list.length=0; return true; }
+              return false;
+            }
+            function deepClean(o,seen){
+              try{
+                if(!o||typeof o!=='object'){return o;}
+                seen=seen||[];
+                if(seen.indexOf(o)>=0){return o;}
+                seen.push(o);
+                if(Array.isArray(o)){
+                  if(cleanList(o)){return o;}
+                  for(var i=0;i<o.length;i++){ deepClean(o[i],seen); }
+                  return o;
+                }
+                if(extraAds()){
+                  for(var k=0;k<SAFE_KEYS.length;k++){
+                    var key=SAFE_KEYS[k];
+                    if(!Object.prototype.hasOwnProperty.call(o,key)){continue;}
+                    var v=o[key];
+                    if(Array.isArray(v)){o[key]=[];}
+                    else if(v&&typeof v==='object'){o[key]={};}
+                  }
+                  for(var s=0;s<SUSPECT_KEYS.length;s++){
+                    var sk=SUSPECT_KEYS[s];
+                    if(!Object.prototype.hasOwnProperty.call(o,sk)){continue;}
+                    var sv=o[sk];
+                    if(Array.isArray(sv)&&cleanList(sv)){continue;}
+                  }
+                }
+                for(var kk in o){
+                  if(!Object.prototype.hasOwnProperty.call(o,kk)){continue;}
+                  var vv=o[kk];
+                  if(vv&&typeof vv==='object'){deepClean(vv,seen);}
+                }
+              }catch(e){}
+              return o;
+            }
+
+            function isJsonUrl(u){
+              u=String(u||'');
+              if(!u){return false;}
+              if(/\/api\/app\//.test(u)){return true;}
+              if(/\/app\//.test(u)){return true;}
+              if(/\/api\//.test(u)){return true;}
+              if(/googlexml|00api-agy5u|huge1-7wnjsk|huge2-2hxu9|ihgtv-qa7pt2/.test(u)){return true;}
+              return false;
+            }
+            function scrubJson(data){
+              if(!data||typeof data!=='object'){return data;}
+              deepClean(data);
+              return data;
+            }
+            function rebuildJson(res,data){
+              try{
+                return new Response(JSON.stringify(data),{status:res.status,statusText:res.statusText,
+                  headers:{'Content-Type':'application/json; charset=utf-8'}});
+              }catch(e){
+                return new Response(JSON.stringify(data),{status:200,headers:{'Content-Type':'application/json; charset=utf-8'}});
+              }
+            }
+
+            if(window.fetch){
+              var innerFetch=window.fetch.bind(window);
+              window.fetch=function(input,init){
+                var url=(typeof input==='string')?input:((input&&input.url)||'');
+                return innerFetch(input,init).then(function(res){
+                  try{
+                    if(!extraAds()||!isJsonUrl(url)){return res;}
+                    var ct=(res.headers&&res.headers.get)?(res.headers.get('content-type')||''):'';
+                    if(ct.indexOf('json')<0){return res;}
+                    return res.clone().json().then(function(data){
+                      return rebuildJson(res,scrubJson(data));
+                    }).catch(function(){return res;});
+                  }catch(e){return res;}
+                });
+              };
+            }
+            if(window.XMLHttpRequest){
+              var OX2=window.XMLHttpRequest;
+              var OP2=OX2.prototype.open, OS2=OX2.prototype.send;
+              OX2.prototype.open=function(m,u){this.__hg_url2=u;return OP2.apply(this,arguments);};
+              OX2.prototype.send=function(){
+                var self=this;
+                var u=self.__hg_url2||'';
+                if(extraAds()&&isJsonUrl(u)){
+                  self.addEventListener('readystatechange',function(){
+                    try{
+                      if(self.readyState!==4){return;}
+                      var t=self.responseText;
+                      if(!t){return;}
+                      var out=scrubJson(JSON.parse(t));
+                      var s=JSON.stringify(out);
+                      if(s===t){return;}
+                      try{Object.defineProperty(self,'responseText',{configurable:true,get:function(){return s;}});}catch(e){}
+                      try{Object.defineProperty(self,'response',{configurable:true,get:function(){return s;}});}catch(e){}
+                    }catch(e){}
+                  });
+                }
+                return OS2.apply(self,arguments);
+              };
+            }
+
+            // ==================== 样式 ====================
+            function ensureImmStyle(){
+              try{
+                if(document.getElementById('hg-immersive-css')){return;}
+                var s=document.createElement('style');
+                s.id='hg-immersive-css';
+                s.textContent=
+                  'html.hg-immersive,html.hg-immersive body{background:#000!important;overflow:hidden!important;height:100%!important}'+
+                  '.hg-immersive-hidden{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;height:0!important;overflow:hidden!important}'+
+                  '.hg-player-box{height:100vh!important;max-height:100vh!important;margin:0!important;padding:0!important;background:#000!important;position:relative!important;top:0!important}'+
+                  '.hg-fill-video{width:100%!important;max-width:100%!important;height:auto!important;max-height:100%!important;object-fit:contain!important;margin:0 auto!important}';
+                (document.head||document.documentElement).appendChild(s);
+              }catch(e){}
+            }
+
+            // ==================== 播放器：隐藏导航 / 沉浸式 / 居中 ====================
+            var playerActive=false, immActive=false;
+            var hiddenNodes=[];
+
+            function biggestVideo(){
+              try{
+                var vs=document.querySelectorAll('video');
+                var best=null,bestArea=0;
+                for(var i=0;i<vs.length;i++){
+                  var r=vs[i].getBoundingClientRect();
+                  var area=r.width*r.height;
+                  if(area>bestArea){bestArea=area;best=vs[i];}
+                }
+                return best;
+              }catch(e){return null;}
+            }
+            function playerBox(v){
+              try{
+                var node=v, best=null, guard=0;
+                var vw=window.innerWidth||0;
+                while(node&&node!==document.body&&guard<8){
+                  var r=node.getBoundingClientRect();
+                  if(r.width>=vw*0.75){best=node;}
+                  node=node.parentNode; guard++;
+                }
+                return best||(v?v.parentNode:null);
+              }catch(e){return null;}
+            }
+            function isBottomDock(el,vh){
+              try{
+                if(!el||!el.getBoundingClientRect){return false;}
+                var r=el.getBoundingClientRect();
+                if(r.height<=0||r.width<=0){return false;}
+                if(r.bottom<vh-160){return false;}
+                var t=(el.innerText||el.textContent||'');
+                if(t.length>400){return false;}
+                var keys=['首页','分类','搜索','我的','发现','会员','追剧'];
+                var hits=0;
+                for(var i=0;i<keys.length;i++){ if(t.indexOf(keys[i])>=0){hits++;} }
+                return hits>=3;
+              }catch(e){return false;}
+            }
+            function isTopHeader(el){
+              try{
+                if(!el||!el.getBoundingClientRect){return false;}
+                var r=el.getBoundingClientRect();
+                if(r.height<=0||r.width<=0){return false;}
+                if(r.top>150){return false;}
+                if(r.height>320){return false;}
+                if(el.querySelector&&el.querySelector('input[type=search],input[type=text],input:not([type])')){return true;}
+                var t=(el.innerText||el.textContent||'');
+                if(t.length>200){return false;}
+                return /搜索/.test(t);
+              }catch(e){return false;}
+            }
+            function walkBounded(root,cb,budget,depth){
+              try{
+                var kids=(root&&root.children)||[];
+                for(var i=0;i<kids.length;i++){
+                  if(budget.n<=0){return;}
+                  var el=kids[i];
+                  budget.n--;
+                  cb(el,depth);
+                  if(depth<4&&budget.n>0){ walkBounded(el,cb,budget,depth+1); }
+                }
+              }catch(e){}
+            }
+            function markChrome(hide){
+              try{
+                ensureImmStyle();
+                var vh=window.innerHeight||0;
+                if(!hide){
+                  for(var i=0;i<hiddenNodes.length;i++){
+                    var node=hiddenNodes[i];
+                    if(node&&node.classList){ node.classList.remove('hg-immersive-hidden'); }
+                  }
+                  hiddenNodes=[];
+                  return;
+                }
+                var found=[];
+                walkBounded(document.body,function(el){
+                  if(isBottomDock(el,vh)||isTopHeader(el)){
+                    if(found.indexOf(el)<0){found.push(el);}
+                  }
+                },{n:700},1);
+                for(var j=0;j<found.length;j++){
+                  var target=found[j];
+                  if(target.classList&&!target.classList.contains('hg-immersive-hidden')){
+                    target.classList.add('hg-immersive-hidden');
+                    hiddenNodes.push(target);
+                  }
+                }
+              }catch(e){}
+            }
+            function nudgeVideo(v,dy){
+              try{
+                if(typeof v.__hgBaseTransform==='undefined'){ v.__hgBaseTransform=v.style.transform||''; }
+                var t=(dy===0)?v.__hgBaseTransform:(v.__hgBaseTransform+' translateY('+Math.round(dy)+'px)');
+                v.style.transform=t;
+              }catch(e){}
+            }
+            function centerVideo(){
+              try{
+                var v=biggestVideo();
+                if(!v){return 'novideo';}
+                var box=playerBox(v)||v.parentNode;
+                if(!box){return 'nobox';}
+                var vr=v.getBoundingClientRect(), br=box.getBoundingClientRect();
+                var targetY=immActive?(br.top+br.height/2):(window.innerHeight/2);
+                var dy=targetY-(vr.top+vr.height/2);
+                var slackUp=Math.max(0,vr.top-br.top);
+                var slackDown=Math.max(0,(br.top+br.height)-(vr.top+vr.height));
+                dy=(dy<0)?Math.max(dy,-slackUp):Math.min(dy,slackDown);
+                if(!isFinite(dy)){dy=0;}
+                if(Math.abs(dy)<6){dy=0;}
+                nudgeVideo(v,dy);
+                return 'dy='+Math.round(dy);
+              }catch(e){return 'err';}
+            }
+            function applyImmersive(on){
+              try{
+                ensureImmStyle();
+                var v=biggestVideo();
+                var box=v?playerBox(v):null;
+                if(on){
+                  try{document.documentElement.classList.add('hg-immersive');}catch(e){}
+                  markChrome(true);
+                  if(box&&box.classList){ box.classList.add('hg-player-box'); }
+                  if(v&&v.classList){ v.classList.add('hg-fill-video'); }
+                }else{
+                  try{document.documentElement.classList.remove('hg-immersive');}catch(e){}
+                  var boxes=document.querySelectorAll('.hg-player-box');
+                  for(var i=0;i<boxes.length;i++){ boxes[i].classList.remove('hg-player-box'); }
+                  var fills=document.querySelectorAll('.hg-fill-video');
+                  for(var j=0;j<fills.length;j++){ fills[j].classList.remove('hg-fill-video'); }
+                  if(v){
+                    v.style.maxWidth='';v.style.maxHeight='';v.style.width='';v.style.height='';v.style.objectFit='';
+                    if(typeof v.__hgBaseTransform!=='undefined'){ v.style.transform=v.__hgBaseTransform; }
+                  }
+                  if(playerActive){ markChrome(true); } else { markChrome(false); }
+                }
+                immActive=on;
+              }catch(e){}
+            }
+            function fixVideoLayout(){
+              try{
+                var v=biggestVideo();
+                if(!v){return;}
+                var vw=window.innerWidth||0;
+                if(!vw){return;}
+                var r=v.getBoundingClientRect();
+                if(!r.width){return;}
+                var overflow=r.width>vw+1;
+                var offCenter=Math.abs((r.left+r.width/2)-vw/2)>8;
+                if(!overflow&&!offCenter){return;}
+                if(v.classList){ v.classList.add('hg-fill-video'); }
+                nudgeVideo(v,0);
+              }catch(e){}
+            }
+
+            window.HGApp.setPlayerMode=function(on){
+              playerActive=!!on;
+              try{
+                if(playerActive&&playerExtra()){ ensureImmStyle(); markChrome(true); }
+                else {
+                  immActive=false;
+                  applyImmersive(false);
+                  markChrome(false);
+                }
+              }catch(e){}
+              scheduleSweep(true);
+              return true;
+            };
+            window.HGApp.setImmersive=function(on){
+              var target=!!on&&playerExtra();
+              try{ applyImmersive(target); }catch(e){}
+              if(!target&&playerActive){ try{ markChrome(true); }catch(e){} }
+              scheduleSweep(true);
+              return true;
+            };
+            window.HGApp.centerVideo=centerVideo;
+            window.HGApp.fixVideoLayout=fixVideoLayout;
+
+            // ==================== DOM 广告清理 ====================
+            var gid=0;
+            function nodeKey(n){
+              try{
+                if(!n.__hgKey){ gid++; n.__hgKey='g'+gid; }
+                return n.__hgKey;
+              }catch(e){return 'x';}
+            }
+            function killExternalIconGrid(){
+              try{
+                var anchors=document.querySelectorAll('a[href]');
+                var groups={};
+                for(var i=0;i<anchors.length;i++){
+                  var a=anchors[i];
+                  var href=a.getAttribute('href')||'';
+                  if(!isExternal(href)){continue;}
+                  if(!a.querySelector('img')){continue;}
+                  var p=a.parentNode;
+                  if(!p){continue;}
+                  var k=nodeKey(p);
+                  (groups[k]=groups[k]||[]).push(a);
+                }
+                for(var kk in groups){
+                  if(!Object.prototype.hasOwnProperty.call(groups,kk)){continue;}
+                  var list=groups[kk];
+                  if(list.length<4){continue;}
+                  for(var j=0;j<list.length;j++){
+                    var el=list[j];
+                    if(el&&el.parentNode){ el.parentNode.removeChild(el); }
+                  }
+                }
+              }catch(e){}
+            }
+            function killAdMarkers(){
+              try{
+                var els=document.querySelectorAll('[data-ad],[data-ads],[data-advert],[class*="ad-banner"],[class*="ad_banner"],[class*="advert"]');
+                for(var i=0;i<els.length;i++){
+                  var el=els[i];
+                  if(el&&el.parentNode){ el.parentNode.removeChild(el); }
+                }
+              }catch(e){}
+            }
+
+            // ==================== 播放：seek 续播（最多重试 2 次，避免拖进度时抖动） ====================
+            var lastPauseAt=0, seekingAt=0;
+            function isVideo(e){
+              try{ return e&&e.target&&e.target.tagName==='VIDEO'?e.target:null; }catch(e2){return null;}
+            }
+            function tryPlay(v,left){
+              try{
+                if(!v.paused){return;}
+                var p=v.play();
+                if(p&&p.catch){ p.catch(function(){ if(left>0){ setTimeout(function(){ tryPlay(v,left-1); },300); } }); }
+              }catch(e){}
+            }
+            document.addEventListener('pause',function(e){
+              var v=isVideo(e);
+              if(v){ lastPauseAt=Date.now(); }
+            },true);
+            document.addEventListener('seeking',function(e){
+              if(isVideo(e)){ seekingAt=Date.now(); }
+            },true);
+            document.addEventListener('seeked',function(e){
+              var v=isVideo(e);
+              if(!v){return;}
+              var justPaused=(Date.now()-lastPauseAt)<1500;
+              if(justPaused||!v.paused){ tryPlay(v,2); }
+            },true);
+            document.addEventListener('waiting',function(e){
+              var v=isVideo(e);
+              if(!v){return;}
+              if((Date.now()-seekingAt)<4000){ setTimeout(function(){ tryPlay(v,1); },300); }
+            },true);
+
+            // ==================== 清扫节流（播放页 DOM 每 ~100ms 更新，必须防抖，否则拖进度会卡） ====================
+            var sweepPending=false,lastSweep=0;
+            var MIN_INTERVAL=1600;
+            function runSweep(){
+              try{
+                // 有视频正在播放时不做任何 DOM 扫描/改动，避免拖进度时被强制回流打断（卡顿根因之一）
+                var vs=document.querySelectorAll('video');
+                var playing=false;
+                for(var i=0;i<vs.length;i++){ if(vs[i]&&!vs[i].paused){playing=true;break;} }
+                if(extraAds()&&!playing){
+                  killExternalIconGrid();
+                  killAdMarkers();
+                }
+                if(!playerActive){ fixVideoLayout(); }
+              }catch(e){}
+            }
+            function scheduleSweep(immediate){
+              try{
+                if(sweepPending){return;}
+                sweepPending=true;
+                var delay=immediate?0:220;
+                setTimeout(function(){
+                  sweepPending=false;
+                  var now=Date.now();
+                  if(now-lastSweep<MIN_INTERVAL && !immediate){ return; }
+                  lastSweep=now;
+                  runSweep();
+                  if(playerActive){ centerVideo(); }
+                },delay);
+              }catch(e){ sweepPending=false; }
+            }
+            window.HGApp.sweepAds=scheduleSweep;
+
             try{
-              if(self.readyState!==4){return;}
-              var t=self.responseText;
-              if(!t){return;}
-              var out=scrubJson(JSON.parse(t));
-              var s=JSON.stringify(out);
-              if(s===t){return;}
-              try{Object.defineProperty(self,'responseText',{configurable:true,get:function(){return s;}});}catch(e){}
-              try{Object.defineProperty(self,'response',{configurable:true,get:function(){return s;}});}catch(e){}
+              window.addEventListener('resize',function(){
+                scheduleSweep(true);
+                if(playerActive){ setTimeout(centerVideo,80); setTimeout(centerVideo,320); }
+              });
+              window.addEventListener('orientationchange',function(){
+                if(playerActive){ setTimeout(centerVideo,120); setTimeout(centerVideo,420); }
+              });
             }catch(e){}
-          });
-        }
-        return OS2.apply(self,arguments);
-      };
-    }
 
-    // ==================== 样式 ====================
-    function ensureImmStyle(){
-      try{
-        if(document.getElementById('hg-immersive-css')){return;}
-        var s=document.createElement('style');
-        s.id='hg-immersive-css';
-        s.textContent=
-          'html.hg-immersive,html.hg-immersive body{background:#000!important;overflow:hidden!important;height:100%!important}'+
-          '.hg-immersive-hidden{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;height:0!important;overflow:hidden!important}'+
-          '.hg-player-box{height:100vh!important;max-height:100vh!important;margin:0!important;padding:0!important;background:#000!important;position:relative!important;top:0!important}'+
-          '.hg-fill-video{width:100%!important;max-width:100%!important;height:auto!important;max-height:100%!important;object-fit:contain!important;margin:0 auto!important}';
-        (document.head||document.documentElement).appendChild(s);
-      }catch(e){}
-    }
-
-    // ==================== 播放器：隐藏导航 / 沉浸式 / 居中 ====================
-    var playerActive=false, immActive=false;
-    var hiddenNodes=[];
-
-    function biggestVideo(){
-      try{
-        var vs=document.querySelectorAll('video');
-        var best=null,bestArea=0;
-        for(var i=0;i<vs.length;i++){
-          var r=vs[i].getBoundingClientRect();
-          var area=r.width*r.height;
-          if(area>bestArea){bestArea=area;best=vs[i];}
-        }
-        return best;
-      }catch(e){return null;}
-    }
-    function playerBox(v){
-      try{
-        var node=v, best=null, guard=0;
-        var vw=window.innerWidth||0;
-        while(node&&node!==document.body&&guard<8){
-          var r=node.getBoundingClientRect();
-          if(r.width>=vw*0.75){best=node;}
-          node=node.parentNode; guard++;
-        }
-        return best||(v?v.parentNode:null);
-      }catch(e){return null;}
-    }
-    function isBottomDock(el,vh){
-      try{
-        if(!el||!el.getBoundingClientRect){return false;}
-        var r=el.getBoundingClientRect();
-        if(r.height<=0||r.width<=0){return false;}
-        if(r.bottom<vh-160){return false;}
-        var t=(el.innerText||el.textContent||'');
-        if(t.length>400){return false;}
-        var keys=['首页','分类','搜索','我的','发现','会员','追剧'];
-        var hits=0;
-        for(var i=0;i<keys.length;i++){ if(t.indexOf(keys[i])>=0){hits++;} }
-        return hits>=3;
-      }catch(e){return false;}
-    }
-    function isTopHeader(el){
-      try{
-        if(!el||!el.getBoundingClientRect){return false;}
-        var r=el.getBoundingClientRect();
-        if(r.height<=0||r.width<=0){return false;}
-        if(r.top>150){return false;}
-        if(r.height>320){return false;}
-        if(el.querySelector&&el.querySelector('input[type=search],input[type=text],input:not([type])')){return true;}
-        var t=(el.innerText||el.textContent||'');
-        if(t.length>200){return false;}
-        return /搜索/.test(t);
-      }catch(e){return false;}
-    }
-    function walkBounded(root,cb,budget,depth){
-      try{
-        var kids=(root&&root.children)||[];
-        for(var i=0;i<kids.length;i++){
-          if(budget.n<=0){return;}
-          var el=kids[i];
-          budget.n--;
-          cb(el,depth);
-          if(depth<4&&budget.n>0){ walkBounded(el,cb,budget,depth+1); }
-        }
-      }catch(e){}
-    }
-    function markChrome(hide){
-      try{
-        ensureImmStyle();
-        var vh=window.innerHeight||0;
-        if(!hide){
-          for(var i=0;i<hiddenNodes.length;i++){
-            var node=hiddenNodes[i];
-            if(node&&node.classList){ node.classList.remove('hg-immersive-hidden'); }
-          }
-          hiddenNodes=[];
-          return;
-        }
-        var found=[];
-        walkBounded(document.body,function(el){
-          if(isBottomDock(el,vh)||isTopHeader(el)){
-            if(found.indexOf(el)<0){found.push(el);}
-          }
-        },{n:700},1);
-        for(var j=0;j<found.length;j++){
-          var target=found[j];
-          if(target.classList&&!target.classList.contains('hg-immersive-hidden')){
-            target.classList.add('hg-immersive-hidden');
-            hiddenNodes.push(target);
-          }
-        }
-      }catch(e){}
-    }
-    function nudgeVideo(v,dy){
-      try{
-        if(typeof v.__hgBaseTransform==='undefined'){ v.__hgBaseTransform=v.style.transform||''; }
-        var t=(dy===0)?v.__hgBaseTransform:(v.__hgBaseTransform+' translateY('+Math.round(dy)+'px)');
-        v.style.transform=t;
-      }catch(e){}
-    }
-    function centerVideo(){
-      try{
-        var v=biggestVideo();
-        if(!v){return 'novideo';}
-        var box=playerBox(v)||v.parentNode;
-        if(!box){return 'nobox';}
-        var vr=v.getBoundingClientRect(), br=box.getBoundingClientRect();
-        var targetY=immActive?(br.top+br.height/2):(window.innerHeight/2);
-        var dy=targetY-(vr.top+vr.height/2);
-        var slackUp=Math.max(0,vr.top-br.top);
-        var slackDown=Math.max(0,(br.top+br.height)-(vr.top+vr.height));
-        dy=(dy<0)?Math.max(dy,-slackUp):Math.min(dy,slackDown);
-        if(!isFinite(dy)){dy=0;}
-        if(Math.abs(dy)<6){dy=0;}
-        nudgeVideo(v,dy);
-        return 'dy='+Math.round(dy);
-      }catch(e){return 'err';}
-    }
-    function applyImmersive(on){
-      try{
-        ensureImmStyle();
-        var v=biggestVideo();
-        var box=v?playerBox(v):null;
-        if(on){
-          try{document.documentElement.classList.add('hg-immersive');}catch(e){}
-          markChrome(true);
-          if(box&&box.classList){ box.classList.add('hg-player-box'); }
-          if(v&&v.classList){ v.classList.add('hg-fill-video'); }
-        }else{
-          try{document.documentElement.classList.remove('hg-immersive');}catch(e){}
-          var boxes=document.querySelectorAll('.hg-player-box');
-          for(var i=0;i<boxes.length;i++){ boxes[i].classList.remove('hg-player-box'); }
-          var fills=document.querySelectorAll('.hg-fill-video');
-          for(var j=0;j<fills.length;j++){ fills[j].classList.remove('hg-fill-video'); }
-          if(v){
-            v.style.maxWidth='';v.style.maxHeight='';v.style.width='';v.style.height='';v.style.objectFit='';
-            if(typeof v.__hgBaseTransform!=='undefined'){ v.style.transform=v.__hgBaseTransform; }
-          }
-          if(playerActive){ markChrome(true); } else { markChrome(false); }
-        }
-        immActive=on;
-      }catch(e){}
-    }
-    function fixVideoLayout(){
-      try{
-        var v=biggestVideo();
-        if(!v){return;}
-        var vw=window.innerWidth||0;
-        if(!vw){return;}
-        var r=v.getBoundingClientRect();
-        if(!r.width){return;}
-        var overflow=r.width>vw+1;
-        var offCenter=Math.abs((r.left+r.width/2)-vw/2)>8;
-        if(!overflow&&!offCenter){return;}
-        if(v.classList){ v.classList.add('hg-fill-video'); }
-        nudgeVideo(v,0);
-      }catch(e){}
-    }
-
-    window.HGApp.setPlayerMode=function(on){
-      playerActive=!!on;
-      try{
-        if(playerActive&&playerExtra()){ ensureImmStyle(); markChrome(true); }
-        else {
-          immActive=false;
-          applyImmersive(false);
-          markChrome(false);
-        }
-      }catch(e){}
-      scheduleSweep(true);
-      return true;
-    };
-    window.HGApp.setImmersive=function(on){
-      var target=!!on&&playerExtra();
-      try{ applyImmersive(target); }catch(e){}
-      if(!target&&playerActive){ try{ markChrome(true); }catch(e){} }
-      scheduleSweep(true);
-      return true;
-    };
-    window.HGApp.centerVideo=centerVideo;
-    window.HGApp.fixVideoLayout=fixVideoLayout;
-
-    // ==================== DOM 广告清理 ====================
-    var gid=0;
-    function nodeKey(n){
-      try{
-        if(!n.__hgKey){ gid++; n.__hgKey='g'+gid; }
-        return n.__hgKey;
-      }catch(e){return 'x';}
-    }
-    function killExternalIconGrid(){
-      try{
-        var anchors=document.querySelectorAll('a[href]');
-        var groups={};
-        for(var i=0;i<anchors.length;i++){
-          var a=anchors[i];
-          var href=a.getAttribute('href')||'';
-          if(!isExternal(href)){continue;}
-          if(!a.querySelector('img')){continue;}
-          var p=a.parentNode;
-          if(!p){continue;}
-          var k=nodeKey(p);
-          (groups[k]=groups[k]||[]).push(a);
-        }
-        for(var kk in groups){
-          if(!Object.prototype.hasOwnProperty.call(groups,kk)){continue;}
-          var list=groups[kk];
-          if(list.length<4){continue;}
-          for(var j=0;j<list.length;j++){
-            var el=list[j];
-            if(el&&el.parentNode){ el.parentNode.removeChild(el); }
-          }
-        }
-      }catch(e){}
-    }
-    function killAdMarkers(){
-      try{
-        var els=document.querySelectorAll('[data-ad],[data-ads],[data-advert],[class*="ad-banner"],[class*="ad_banner"],[class*="advert"]');
-        for(var i=0;i<els.length;i++){
-          var el=els[i];
-          if(el&&el.parentNode){ el.parentNode.removeChild(el); }
-        }
-      }catch(e){}
-    }
-
-    // ==================== 播放：seek 续播（最多重试 2 次，避免拖进度时抖动） ====================
-    var lastPauseAt=0, seekingAt=0;
-    function isVideo(e){
-      try{ return e&&e.target&&e.target.tagName==='VIDEO'?e.target:null; }catch(e2){return null;}
-    }
-    function tryPlay(v,left){
-      try{
-        if(!v.paused){return;}
-        var p=v.play();
-        if(p&&p.catch){ p.catch(function(){ if(left>0){ setTimeout(function(){ tryPlay(v,left-1); },300); } }); }
-      }catch(e){}
-    }
-    document.addEventListener('pause',function(e){
-      var v=isVideo(e);
-      if(v){ lastPauseAt=Date.now(); }
-    },true);
-    document.addEventListener('seeking',function(e){
-      if(isVideo(e)){ seekingAt=Date.now(); }
-    },true);
-    document.addEventListener('seeked',function(e){
-      var v=isVideo(e);
-      if(!v){return;}
-      var justPaused=(Date.now()-lastPauseAt)<1500;
-      if(justPaused||!v.paused){ tryPlay(v,2); }
-    },true);
-    document.addEventListener('waiting',function(e){
-      var v=isVideo(e);
-      if(!v){return;}
-      if((Date.now()-seekingAt)<4000){ setTimeout(function(){ tryPlay(v,1); },300); }
-    },true);
-
-    // ==================== 清扫节流（播放页 DOM 每 ~100ms 更新，必须防抖，否则拖进度会卡） ====================
-    var sweepPending=false,lastSweep=0;
-    var MIN_INTERVAL=1600;
-    function runSweep(){
-      try{
-        // 有视频正在播放时不做任何 DOM 扫描/改动，避免拖进度时被强制回流打断（卡顿根因之一）
-        var vs=document.querySelectorAll('video');
-        var playing=false;
-        for(var i=0;i<vs.length;i++){ if(vs[i]&&!vs[i].paused){playing=true;break;} }
-        if(extraAds()&&!playing){
-          killExternalIconGrid();
-          killAdMarkers();
-        }
-        if(!playerActive){ fixVideoLayout(); }
-      }catch(e){}
-    }
-    function scheduleSweep(immediate){
-      try{
-        if(sweepPending){return;}
-        sweepPending=true;
-        var delay=immediate?0:220;
-        setTimeout(function(){
-          sweepPending=false;
-          var now=Date.now();
-          if(now-lastSweep<MIN_INTERVAL && !immediate){ return; }
-          lastSweep=now;
-          runSweep();
-          if(playerActive){ centerVideo(); }
-        },delay);
-      }catch(e){ sweepPending=false; }
-    }
-    window.HGApp.sweepAds=scheduleSweep;
-
-    try{
-      window.addEventListener('resize',function(){
-        scheduleSweep(true);
-        if(playerActive){ setTimeout(centerVideo,80); setTimeout(centerVideo,320); }
-      });
-      window.addEventListener('orientationchange',function(){
-        if(playerActive){ setTimeout(centerVideo,120); setTimeout(centerVideo,420); }
-      });
-    }catch(e){}
-
-    function boot2(){
-      scheduleSweep(true);
-      try{
-        var mo=new MutationObserver(function(){ scheduleSweep(false); });
-        mo.observe(document.documentElement||document,{childList:true,subtree:true});
-      }catch(e){}
-      setInterval(function(){ scheduleSweep(false); },2600);
-    }
-    if(document.documentElement){boot2();}
-    else{document.addEventListener('DOMContentLoaded',boot2);}
-  }catch(e){}
-})();
+            function boot2(){
+              scheduleSweep(true);
+              try{
+                var mo=new MutationObserver(function(){ scheduleSweep(false); });
+                mo.observe(document.documentElement||document,{childList:true,subtree:true});
+              }catch(e){}
+              setInterval(function(){ scheduleSweep(false); },2600);
+            }
+            if(document.documentElement){boot2();}
+            else{document.addEventListener('DOMContentLoaded',boot2);}
+          }catch(e){}
+        })();
         """##
     }
 
