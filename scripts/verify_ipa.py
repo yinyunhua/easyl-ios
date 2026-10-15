@@ -34,6 +34,14 @@ MARKERS = [
     b"orientationchange",
     b"__HG_EXTRA_ADS__",
     b"requestGeometryUpdate",
+    # v2.1（播放页沉浸式与居中：隐藏 H5 导航 / 横屏铺满 / 视频居中）
+    b"__HG_PLAYER_EXTRA__",
+    b"hg-immersive-hidden",
+    b"hg-player-box",
+    b"hg-fill-video",
+    b"setPlayerMode",
+    b"centerVideo",
+    b"markChrome",
 ]
 
 EXTRA_FILES = [

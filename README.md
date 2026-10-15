@@ -146,12 +146,25 @@ bash scripts/build_unsigned_ipa.sh  # 产出 HgForIOS-unsigned.ipa
 | 项 | 值 |
 |---|---|
 | 仓库 / 分支 | `github.com/yinyunhua/easyl-ios` → `hgforios` |
-| 成功运行 | run **#14**（首版 run #13，均 `conclusion=success`，macos-14 + Xcode 15.4） |
-| Release（免登录下载） | `https://github.com/yinyunhua/easyl-ios/releases/tag/hgforios-ipa-14` |
-| IPA | `https://github.com/yinyunhua/easyl-ios/releases/download/hgforios-ipa-14/HgForIOS-unsigned.ipa` |
-| 本地副本 | `hgtv_ios/dist/HgForIOS-unsigned.ipa`（2.19 MB） |
-| SHA256（run #14） | `37C9BFB35CCC226B0B18E116A2E17326ADD2701665C13C53D7A16F649969300A` |
-| 校验脚本 | `python scripts/verify_ipa.py` → 结构 / Info.plist / arm64 可执行体 / 补丁标记 / 闪屏锚点 全部通过 |
+| 成功运行 | run **#16**（#14/#16 均 success；#15 因多行字符串缩进失败，已修并加本地 lint，macos-14 + Xcode 15.4） |
+| Release（免登录下载） | `https://github.com/yinyunhua/easyl-ios/releases/tag/hgforios-ipa-16` |
+| IPA | `https://github.com/yinyunhua/easyl-ios/releases/download/hgforios-ipa-16/HgForIOS-unsigned.ipa` |
+| 本地副本 | `hgtv_ios/dist/HgForIOS-unsigned.ipa` |
+| SHA256（run #16） | `C02A9528780FA6EBC9A6EFF8DCACF9034142098A0B4B3F58A0B3CF37211546F7` |
+| 校验脚本 | `python scripts/verify_ipa.py` → 结构 / Info.plist / arm64 可执行体 / 25 个补丁标记 / 闪屏锚点 全部通过 |
+
+### 真机反馈第二轮 6 项（run #16）
+
+| # | 现象 | 根因 | 修法 |
+|---|---|---|---|
+| 1 | 竖屏左上角「第X集」压住 logo；右上角搜索、底部 4 个导航多余 | H5 自身顶栏/底部 tab 与剧集标签同一区块 | 播放页注入 `HGApp.setPlayerMode(true)`：按「底部出现 ≥3 个主 tab 关键词」「顶部含搜索框」两条判定，给顶栏与底部导航加 `.hg-immersive-hidden`（`display:none!important`），退出播放页原样还原 |
+| 2 | 右下角横屏键压住播放时间/倍速 | 我把旋转键放在了右下 | 旋转键移到**右上角**（34pt、55% 透明度）；右下角只留隐形长按区 |
+| 3 | 竖屏视频仍不居中 | 视频中心与屏幕中心存在固定偏移（容器上方有顶栏、下方有 tab/选集） | 隐藏导航后按「视频中心 → 屏幕中心」计算偏移并写回 `transform: translateY()`，偏移被夹在容器上下余量内（不会溢出、不动布局） |
+| 4 | 横屏仍有一堆导航/logo/搜索，不是沉浸式 | 横屏时只是把 APP 转了向，H5 布局未变 | 横屏进入沉浸式：`html.hg-immersive`（黑底、禁滚动）+ 播放器盒 `.hg-player-box`（`height:100vh`）+ 视频 `.hg-fill-video`（`width:100%`、`object-fit:contain`）+ 隐藏导航；只留视频、进度条、旋转键 |
+| 5 | 拖/点进度仍卡 | v2 清扫挂了 `MutationObserver` 且每 900ms 全量跑 `querySelectorAll` + `getBoundingClientRect`（强制回流），而播放页 DOM 每 ~100ms 更新一次 | 三重收口：① 清扫改为 220ms 防抖 + 最小间隔 1600ms；② **有视频正在播放时完全不做任何 DOM 扫描/改动**；③ `centerVideo` 只在模式切换/旋转/尺寸变化时执行 |
+| 6 | 视频不清晰，横屏尤其明显 | 横屏没有把 video 元素放大到视口，H5 按小尺寸渲染后被拉伸 | 沉浸式强制 `.hg-fill-video`（满宽 + `object-fit:contain`），并优先 `webkitEnterFullscreen()` 走原生全屏播放器（按屏幕分辨率渲染）；旋转后派发 `resize`/`orientationchange` 让 H5 重排 |
+
+全部改动都放在 iOS 增强补丁 v2 里（`__HG_PATCH_V2__`），APK 原始补丁 v1 保持逐字一致（152/152 行）。设置页可实时开关「额外去广告」「播放页沉浸式」，另有「用 H5 优先返回键 / 锁横屏 + 原生全屏 / 通知 H5 重排 / 重跑居中」按钮。
 
 `verify_ipa.py` 实测输出要点：`CFBundleIdentifier=com.hg.app`、`CFBundleDisplayName=黄果漫剧`、`2.0.5(103)`、`MinimumOSVersion=16.0`、可执行体 `MH_MAGIC_64 / arm64`；包内 `splash_anchor.json` = `{contentCenterY: 0.4702, contentCenterX: 0.4778}`；二进制命中 `__HG_PATCH_V1__`、`fakeVip`、`stripAds`、`unlockPlay`、`HuangGuoNative`、`__HG_API_SEED__`、`hg-app-update-result`、`hgtv[_-]([A-Za-z0-9]{16,64})`、`__HG_PATCH_V2__`、`sweepAds`、`fixVideoLayout`、`webkitEnterFullscreen`、`orientationchange`、`requestGeometryUpdate`。
 
