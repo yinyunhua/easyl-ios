@@ -57,4 +57,10 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     func applicationDidBecomeActive(_ application: UIApplication) {
         PromoCapture.captureAll(launchURL: nil)
     }
+
+    /// 外壳自管方向：播放页可锁横屏（H5 在 iOS 上拿不到 orientation.lock）。
+    func application(_ application: UIApplication,
+                     supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+        AppOrientation.shared.mask
+    }
 }

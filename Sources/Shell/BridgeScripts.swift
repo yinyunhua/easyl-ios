@@ -72,6 +72,9 @@ enum BridgeScripts {
             getApiBase:function(){ return String(cached('apiBase')||''); },
             getPromoAgentId:function(){ return String(cached('promoAgentId')||''); },
             setPullRefreshEnabled:function(enabled){ invoke('setPullRefreshEnabled',[!!enabled]); return true; },
+            setOrientation:function(mode){ invoke('setOrientation',[String(mode||'')]); return true; },
+            enterFullscreen:function(){ invoke('enterFullscreen',[]); return true; },
+            exitFullscreen:function(){ invoke('exitFullscreen',[]); return true; },
             openUrl:function(url){ invoke('openUrl',[String(url||'')]); return true; }
           };
         })();
@@ -130,6 +133,24 @@ enum BridgeScripts {
         window.HGApp.setPullRefreshEnabled=function(enabled){
           try{
             if(window.HuangGuoNative&&HuangGuoNative.setPullRefreshEnabled){ HuangGuoNative.setPullRefreshEnabled(enabled); return true; }
+          }catch(e){}
+          return false;
+        };
+        window.HGApp.setOrientation=function(mode){
+          try{
+            if(window.HuangGuoNative&&HuangGuoNative.setOrientation){ HuangGuoNative.setOrientation(String(mode||'')); return true; }
+          }catch(e){}
+          return false;
+        };
+        window.HGApp.enterFullscreen=function(){
+          try{
+            if(window.HuangGuoNative&&HuangGuoNative.enterFullscreen){ HuangGuoNative.enterFullscreen(); return true; }
+          }catch(e){}
+          return false;
+        };
+        window.HGApp.exitFullscreen=function(){
+          try{
+            if(window.HuangGuoNative&&HuangGuoNative.exitFullscreen){ HuangGuoNative.exitFullscreen(); return true; }
           }catch(e){}
           return false;
         };
@@ -315,6 +336,400 @@ enum BridgeScripts {
       }catch(e){}
     })();
     """##
+
+    /// iOS 侧增补补丁（v1 保持与 APK 逐字一致，通用增强全部放在这里，互不污染）。
+    ///
+    /// 解决三件在真机上暴露的问题：
+    ///  1. 首页两排 5×2 外链广告图标：v1 只清 `icons/banners/strip/slots` 且 `isAppApi` 路由白名单过窄，
+    ///     这里做「更宽路由 + 字段清空 + 数组推广启发式 + DOM 外链栅格兜底」四层清理；
+    ///  2. 播放页拖动进度条后不自动续播：WebKit 会在 seek 时把 video 置暂停，这里检测「seek 引发的 pause」
+    ///     并自动 `play()` 续播（用户主动暂停在 seek 1.5s 之外，不会被误恢复）；
+    ///  3. 与 v1 一样全部可重入（`__HG_PATCH_V2__` 守卫），并支持在设置页开关额外去广告。
+    static func iosPatchJS(ownHosts: [String]) -> String {
+        let hosts = ownHosts.map { sanitize($0) }.filter { !$0.isEmpty }
+        let hostsJSON = "[" + hosts.map { "'\($0)'" }.joined(separator: ",") + "]"
+        return ##"""
+        (function(){
+          try{
+            if(window.__HG_PATCH_V2__){return;}
+            window.__HG_PATCH_V2__=true;
+            window.HGApp=window.HGApp||{};
+            window.HGApp.__patchIos='v2';
+
+            var OWN_HOSTS=\##(hostsJSON);
+
+            function extraAds(){
+              try{ return window.__HG_EXTRA_ADS__===undefined?true:!!window.__HG_EXTRA_ADS__; }catch(e){ return true; }
+            }
+
+            function own(h){
+              if(!h){return true;}
+              h=String(h).toLowerCase();
+              if(h===String(location.host||'').toLowerCase()){return true;}
+              for(var i=0;i<OWN_HOSTS.length;i++){
+                var o=String(OWN_HOSTS[i]).toLowerCase();
+                if(h===o){return true;}
+                if(h.length>o.length&&h.slice(-(o.length+1))==='.'+o){return true;}
+              }
+              return false;
+            }
+            function hostOf(u){
+              try{
+                var m=/^(?:[a-z][a-z0-9+.\-]*:)?\/\/([^\/\?#]+)/i.exec(String(u||''));
+                if(!m){return '';}
+                return m[1].split('@').pop().split(':')[0].toLowerCase();
+              }catch(e){return '';}
+            }
+            function isExternal(u){
+              var s=String(u||'');
+              if(s.indexOf('://')<0&&s.indexOf('//')!==0){
+                return /^[a-z][a-z0-9+.\-]*:\/\//i.test(s)||s.indexOf('package:')===0||s.indexOf('scheme=')>=0;
+              }
+              if(/^(https?:)?\/\//i.test(s)===false&&s.indexOf('://')<0){return false;}
+              var h=hostOf(s);
+              return !!h&&!own(h);
+            }
+
+            var SAFE_KEYS=['icons','banners','strip','ads','ad_list','adlist','ad_list_v2','advertisement','advertisements',
+                           'promo','promos','promotion','promotions','recommend_apps','hot_apps','download_apps','quick_apps',
+                           'nav_apps','app_icons','splash_ads','float_ads','popup_ads'];
+            var SUSPECT_KEYS=['links','apps','app_list','applist','nav','navs','tabs','blocks','items','list','entries','grid','quick'];
+            var ICON_KEYS=['icon','logo','img','image','cover','pic','thumb','icon_url','logo_url','image_url','iconUrl','logoUrl'];
+            var LINK_KEYS=['url','link','href','jump','jump_url','target','target_url','scheme','scheme_url','package','package_name',
+                           'pkg','apk','download','download_url','android_url','ios_url','deeplink','deeplink_url','open_url'];
+
+            function firstKey(o,keys){
+              if(!o||typeof o!=='object'||Array.isArray(o)){return null;}
+              for(var i=0;i<keys.length;i++){
+                if(Object.prototype.hasOwnProperty.call(o,keys[i])){
+                  var v=o[keys[i]];
+                  if(v&&typeof v==='string'){return keys[i];}
+                }
+              }
+              return null;
+            }
+            function looksLikePromo(o){
+              try{
+                if(!o||typeof o!=='object'||Array.isArray(o)){return false;}
+                var ik=firstKey(o,ICON_KEYS), lk=firstKey(o,LINK_KEYS);
+                if(!ik||!lk){return false;}
+                return isExternal(o[lk]);
+              }catch(e){return false;}
+            }
+            function promoRatio(list){
+              if(!Array.isArray(list)||!list.length){return 0;}
+              var n=0;
+              for(var i=0;i<list.length;i++){ if(looksLikePromo(list[i])){n++;} }
+              return n/list.length;
+            }
+            function cleanList(list){
+              if(!Array.isArray(list)||list.length<4){return false;}
+              var r=promoRatio(list);
+              if(r>=0.5){ list.length=0; return true; }
+              return false;
+            }
+            function deepClean(o,seen){
+              try{
+                if(!o||typeof o!=='object'){return o;}
+                seen=seen||[];
+                if(seen.indexOf(o)>=0){return o;}
+                seen.push(o);
+                if(Array.isArray(o)){
+                  if(cleanList(o)){return o;}
+                  for(var i=0;i<o.length;i++){ deepClean(o[i],seen); }
+                  return o;
+                }
+                if(extraAds()){
+                  for(var k=0;k<SAFE_KEYS.length;k++){
+                    var key=SAFE_KEYS[k];
+                    if(!Object.prototype.hasOwnProperty.call(o,key)){continue;}
+                    var v=o[key];
+                    if(Array.isArray(v)){o[key]=[];}
+                    else if(v&&typeof v==='object'){o[key]={};}
+                  }
+                  for(var s=0;s<SUSPECT_KEYS.length;s++){
+                    var sk=SUSPECT_KEYS[s];
+                    if(!Object.prototype.hasOwnProperty.call(o,sk)){continue;}
+                    var sv=o[sk];
+                    if(Array.isArray(sv)&&cleanList(sv)){continue;}
+                  }
+                }
+                for(var kk in o){
+                  if(!Object.prototype.hasOwnProperty.call(o,kk)){continue;}
+                  var vv=o[kk];
+                  if(vv&&typeof vv==='object'){deepClean(vv,seen);}
+                }
+              }catch(e){}
+              return o;
+            }
+
+            function isJsonUrl(u){
+              u=String(u||'');
+              if(!u){return false;}
+              if(/\/api\/app\//.test(u)){return true;}
+              if(/\/app\//.test(u)){return true;}
+              if(/\/api\//.test(u)){return true;}
+              if(/googlexml|00api-agy5u|huge1-7wnjsk|huge2-2hxu9|ihgtv-qa7pt2/.test(u)){return true;}
+              return false;
+            }
+
+            function scrubJson(data){
+              if(!data||typeof data!=='object'){return data;}
+              deepClean(data);
+              return data;
+            }
+            function rebuildJson(res,data){
+              try{
+                return new Response(JSON.stringify(data),{status:res.status,statusText:res.statusText,
+                  headers:{'Content-Type':'application/json; charset=utf-8'}});
+              }catch(e){
+                return new Response(JSON.stringify(data),{status:200,headers:{'Content-Type':'application/json; charset=utf-8'}});
+              }
+            }
+
+            // ---- 网络层：包住 v1 已经包过的 fetch / XHR，只在 JSON 且命中路由时做额外清理 ----
+            if(window.fetch){
+              var innerFetch=window.fetch.bind(window);
+              window.fetch=function(input,init){
+                var url=(typeof input==='string')?input:((input&&input.url)||'');
+                return innerFetch(input,init).then(function(res){
+                  try{
+                    if(!extraAds()||!isJsonUrl(url)){return res;}
+                    var ct=(res.headers&&res.headers.get)?(res.headers.get('content-type')||''):'';
+                    if(ct.indexOf('json')<0){return res;}
+                    return res.clone().json().then(function(data){
+                      return rebuildJson(res,scrubJson(data));
+                    }).catch(function(){return res;});
+                  }catch(e){return res;}
+                });
+              };
+            }
+            if(window.XMLHttpRequest){
+              var OX2=window.XMLHttpRequest;
+              var OP2=OX2.prototype.open, OS2=OX2.prototype.send;
+              OX2.prototype.open=function(m,u){this.__hg_url2=u;return OP2.apply(this,arguments);};
+              OX2.prototype.send=function(){
+                var self=this;
+                var u=self.__hg_url2||'';
+                if(extraAds()&&isJsonUrl(u)){
+                  self.addEventListener('readystatechange',function(){
+                    try{
+                      if(self.readyState!==4){return;}
+                      var t=self.responseText;
+                      if(!t){return;}
+                      var data=JSON.parse(t);
+                      var out=scrubJson(data);
+                      var s=JSON.stringify(out);
+                      if(s===t){return;}
+                      try{Object.defineProperty(self,'responseText',{configurable:true,get:function(){return s;}});}catch(e){}
+                      try{Object.defineProperty(self,'response',{configurable:true,get:function(){return s;}});}catch(e){}
+                    }catch(e){}
+                  });
+                }
+                return OS2.apply(self,arguments);
+              };
+            }
+
+            // ---- DOM 层：清掉「一行里 ≥4 个外链图标」的推广栅格，以及显式广告标记 ----
+            var gid=0;
+            function nodeKey(n){
+              try{
+                if(!n.__hgKey){ gid++; n.__hgKey='g'+gid; }
+                return n.__hgKey;
+              }catch(e){return 'x';}
+            }
+            function killExternalIconGrid(){
+              try{
+                var anchors=document.querySelectorAll('a[href]');
+                var groups={};
+                for(var i=0;i<anchors.length;i++){
+                  var a=anchors[i];
+                  var href=a.getAttribute('href')||'';
+                  if(!isExternal(href)){continue;}
+                  if(!a.querySelector('img')){continue;}
+                  var p=a.parentNode;
+                  if(!p){continue;}
+                  var k=nodeKey(p);
+                  (groups[k]=groups[k]||[]).push(a);
+                }
+                for(var kk in groups){
+                  if(!Object.prototype.hasOwnProperty.call(groups,kk)){continue;}
+                  var list=groups[kk];
+                  if(list.length<4){continue;}
+                  for(var j=0;j<list.length;j++){
+                    var el=list[j];
+                    if(el&&el.parentNode){ el.parentNode.removeChild(el); }
+                  }
+                }
+              }catch(e){}
+            }
+            function killAdMarkers(){
+              try{
+                var sel='[data-ad],[data-ads],[data-advert],[class*="ad-banner"],[class*="ad_banner"],[class*="advert"]';
+                var els=document.querySelectorAll(sel);
+                for(var i=0;i<els.length;i++){
+                  var el=els[i];
+                  if(el&&el.parentNode){ el.parentNode.removeChild(el); }
+                }
+              }catch(e){}
+            }
+            // ---- 播放器居中兜底：只在 video 真溢出视口 / 明显偏心时才纠正 ----
+            function fixVideoLayout(){
+              try{
+                var vs=document.querySelectorAll('video');
+                if(!vs.length){return;}
+                var vw=window.innerWidth||document.documentElement.clientWidth||0;
+                if(!vw){return;}
+                for(var i=0;i<vs.length;i++){
+                  var v=vs[i];
+                  var r=v.getBoundingClientRect();
+                  if(!r.width){continue;}
+                  var overflow=r.width>vw+1;
+                  var offCenter=Math.abs((r.left+r.width/2)-vw/2)>8;
+                  if(!overflow&&!offCenter){continue;}
+                  v.style.maxWidth='100%';
+                  v.style.marginLeft='auto';
+                  v.style.marginRight='auto';
+                  v.style.objectFit='contain';
+                  if(overflow){ v.style.width='100%'; }
+                  var p=v.parentNode;
+                  if(p&&p.style){
+                    p.style.display='flex';
+                    p.style.justifyContent='center';
+                    p.style.alignItems='center';
+                    p.style.overflow='hidden';
+                  }
+                }
+              }catch(e){}
+            }
+            window.HGApp.fixVideoLayout=fixVideoLayout;
+
+            function sweep(){
+              if(!extraAds()){fixVideoLayout();return;}
+              killExternalIconGrid();
+              killAdMarkers();
+              fixVideoLayout();
+            }
+            window.HGApp.sweepAds=sweep;
+
+            // ---- 播放：seek 引发的暂停自动续播（用户主动暂停不受影响） ----
+            var lastPauseAt=0, seekingAt=0;
+            function isVideo(e){
+              try{ return e&&e.target&&e.target.tagName==='VIDEO'?e.target:null; }catch(e2){return null;}
+            }
+            function resume(v,cb){
+              try{
+                var p=v.play();
+                if(p&&p.catch){ p.catch(function(){ if(cb){cb();} }); } else if(cb){ cb(); }
+              }catch(e){ if(cb){cb();} }
+            }
+            function resumeWithRetry(v){
+              var tries=0;
+              (function tick(){
+                tries++;
+                if(!v.paused||tries>6){return;}
+                resume(v,function(){ setTimeout(tick,220); });
+              })();
+            }
+            document.addEventListener('pause',function(e){
+              var v=isVideo(e);
+              if(!v){return;}
+              lastPauseAt=Date.now();
+            },true);
+            document.addEventListener('seeking',function(e){
+              if(isVideo(e)){ seekingAt=Date.now(); }
+            },true);
+            document.addEventListener('seeked',function(e){
+              var v=isVideo(e);
+              if(!v){return;}
+              var justPaused=(Date.now()-lastPauseAt)<1500;
+              if(justPaused||!v.paused){
+                resumeWithRetry(v);
+              }
+            },true);
+            document.addEventListener('waiting',function(e){
+              var v=isVideo(e);
+              if(!v){return;}
+              if((Date.now()-seekingAt)<4000){ setTimeout(function(){ resumeWithRetry(v); },300); }
+            },true);
+
+            function boot2(){
+              sweep();
+              try{
+                var mo=new MutationObserver(function(){ sweep(); });
+                mo.observe(document.documentElement||document,{childList:true,subtree:true});
+              }catch(e){}
+              setInterval(sweep,900);
+            }
+            if(document.documentElement){boot2();}
+            else{document.addEventListener('DOMContentLoaded',boot2);}
+          }catch(e){}
+        })();
+        """##
+    }
+
+    /// 额外去广告开关（设置页可实时切换，无需重装）。
+    static func extraAdsFlagJS(_ enabled: Bool) -> String {
+        ##"""
+        window.__HG_EXTRA_ADS__=\##(enabled ? "true" : "false");
+        """##
+    }
+
+    /// 让页面上最大的 `<video>` 进原生全屏（iOS 上 `screen.orientation.lock()` 不可用，
+    /// 「横屏」由外壳通过 `webkitEnterFullscreen` + 几何更新实现）。
+    static let enterNativeFullscreenJS = ##"""
+    (function(){
+      try{
+        var vs=document.querySelectorAll('video');
+        var best=null,bestW=0;
+        for(var i=0;i<vs.length;i++){
+          var r=vs[i].getBoundingClientRect();
+          if(r.width>bestW){bestW=r.width;best=vs[i];}
+        }
+        if(!best){return 'novideo';}
+        try{ if(best.webkitEnterFullscreen){ best.webkitEnterFullscreen(); return 'native'; } }catch(e){}
+        try{ if(best.requestFullscreen){ best.requestFullscreen(); return 'std'; } }catch(e){}
+      }catch(e){}
+      return 'none';
+    })();
+    """##
+
+    /// 退出全屏（原生全屏优先，其次 Fullscreen API）。
+    static let exitNativeFullscreenJS = ##"""
+    (function(){
+      try{
+        var v=document.querySelector('video');
+        if(v&&v.webkitDisplayingFullscreen&&v.webkitExitFullscreen){ v.webkitExitFullscreen(); return 'native'; }
+        if(document.fullscreenElement&&document.exitFullscreen){ document.exitFullscreen(); return 'std'; }
+      }catch(e){}
+      return 'none';
+    })();
+    """##
+
+    /// 旋转后通知 H5 重新排版（否则播放器仍按旧视口尺寸居中 → 看起来偏了）。
+    static let resizeDispatchJS = ##"""
+    (function(){
+      try{ window.dispatchEvent(new Event('resize')); }catch(e){}
+      try{ window.dispatchEvent(new Event('orientationchange')); }catch(e){}
+    })();
+    """##
+
+    /// 注入用的自有域名清单：正式种子 + API 基址（+ 调试种子）。与 `ShellModel.trustedHosts` 同源但可静态计算，
+    /// 以便在 `atDocumentStart` 就装好补丁（避免首页首个数据请求抢在注入之前）。
+    static func staticOwnHosts(includeDebugSeeds: Bool) -> [String] {
+        var hosts = Set<String>()
+        func add(_ value: String) {
+            guard let host = URL(string: value)?.host?.lowercased(), !host.isEmpty else { return }
+            hosts.insert(host)
+        }
+        AppConfig.releaseSeeds.forEach(add)
+        add(AppConfig.apiSeed)
+        add(AppConfig.apiSeedBackup)
+        if includeDebugSeeds {
+            AppConfig.debugSeedHosts.forEach { hosts.insert($0.lowercased()) }
+        }
+        return Array(hosts).sorted()
+    }
 
     /// 返回键协商脚本：H5 优先处理，未处理则由外壳决定 goBack/finish。
     static let handleBackJS = ##"""

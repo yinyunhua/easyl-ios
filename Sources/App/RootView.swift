@@ -85,9 +85,6 @@ struct RootView: View {
     private var overlayControls: some View {
         VStack {
             HStack(spacing: 10) {
-                if model.canGoBack {
-                    ShellBackButton { model.handleBack() }
-                }
                 Spacer()
                 if AppConfig.isDebugBuild {
                     Button {
@@ -107,6 +104,27 @@ struct RootView: View {
             .padding(.top, 6)
 
             Spacer()
+
+            // 播放页专属：右侧中部的横屏/全屏键（H5 在 iOS 上拿不到 orientation.lock，必须由外壳提供）
+            if model.isPlayerPage {
+                HStack {
+                    Spacer()
+                    Button {
+                        model.togglePlayerFullscreen()
+                    } label: {
+                        Image(systemName: model.isLandscapeForced ? "arrow.down.right.and.arrow.up.left" : "arrow.up.left.and.arrow.down.right")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(.white)
+                            .frame(width: 40, height: 40)
+                            .background(Color.black.opacity(0.42))
+                            .clipShape(Circle())
+                            .overlay(Circle().stroke(Color.white.opacity(0.18), lineWidth: 0.5))
+                    }
+                    .opacity(0.72)
+                    .padding(.trailing, 6)
+                    .accessibilityLabel(model.isLandscapeForced ? "退出横屏" : "横屏播放")
+                }
+            }
 
             HStack {
                 Spacer()

@@ -1,37 +1,69 @@
-﻿import SwiftUI
+import SwiftUI
 import UIKit
 
 /// 品牌闪屏，对应 Android 的 `ImageView(R.drawable.splash_brand)`：
-/// `CENTER_CROP` 铺满 + `#22242A` 背景 + 220ms 淡出。
+/// `#22242A` 背景 + 满屏铺开 + 220ms 淡出。
+///
+/// 与 Android 的差别（也是修掉的观感问题）：`CENTER_CROP` 直接铺满时，素材里的
+/// logo 簇（标 + 标题）本身位于约 47% 高度、47.8% 宽度，在长屏手机上会显得偏上偏左。
+/// 这里读出 `splash_anchor.json` 里实测的簇中心，按锚点把图精确居中：
+/// 先按 cover 缩放并额外放大一点腾出可平移余量，再平移 `(0.5 - 锚点) * 屏幕尺寸`，
+/// 平移量夹在余量内，因此任何屏幕比例下都不会露边。
 struct SplashOverlay: View {
     var alpha: Double
 
     var body: some View {
-        ZStack {
-            Color(uiColor: AppConfig.chromeColor)
-                .ignoresSafeArea()
-            if let image = SplashArtwork.image {
-                Image(uiImage: image)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .ignoresSafeArea()
-            } else {
-                VStack(spacing: 12) {
-                    Text(AppConfig.displayName)
-                        .font(.system(size: 34, weight: .bold))
-                        .foregroundColor(Color(uiColor: AppConfig.accentColor))
-                    Text("v\(AppConfig.appVersion)")
-                        .font(.footnote)
-                        .foregroundColor(.white.opacity(0.5))
+        GeometryReader { geo in
+            let size = geo.size
+            ZStack {
+                Color(uiColor: AppConfig.chromeColor)
+                if let image = SplashArtwork.image, size.width > 1, size.height > 1 {
+                    let source = image.size
+                    let deltaX = 0.5 - SplashArtwork.anchor.x
+                    let deltaY = 0.5 - SplashArtwork.anchor.y
+                    // 放大系数：留出足够平移余量，同时避免明显放大
+                    let zoom = 1 + max(abs(deltaX) * 2.4, abs(deltaY) * 2.4)
+                    let scale = max(size.width / source.width, size.height / source.height) * zoom
+                    let rendered = CGSize(width: source.width * scale, height: source.height * scale)
+                    let slackX = max(0, (rendered.width - size.width) / 2)
+                    let slackY = max(0, (rendered.height - size.height) / 2)
+                    let offsetX = min(max(deltaX * size.width, -slackX), slackX)
+                    let offsetY = min(max(deltaY * size.height, -slackY), slackY)
+
+                    Image(uiImage: image)
+                        .resizable()
+                        .frame(width: rendered.width, height: rendered.height)
+                        .offset(x: offsetX, y: offsetY)
+                } else {
+                    VStack(spacing: 12) {
+                        Text(AppConfig.displayName)
+                            .font(.system(size: 34, weight: .bold))
+                            .foregroundColor(Color(uiColor: AppConfig.accentColor))
+                        Text("v\(AppConfig.appVersion)")
+                            .font(.footnote)
+                            .foregroundColor(.white.opacity(0.5))
+                    }
                 }
             }
+            .frame(width: size.width, height: size.height)
+            .clipped()
         }
+        .ignoresSafeArea()
         .opacity(alpha)
         .allowsHitTesting(false)
     }
 }
 
 enum SplashArtwork {
+
+    struct Anchor {
+        /// 素材里 logo 簇中心的纵向比例（缺 JSON 时按本素材实测值兜底）
+        var y: CGFloat = 0.4702
+        /// 横向比例
+        var x: CGFloat = 0.4778
+        var detected: Bool = false
+    }
+
     /// 由 APK 的 `res/drawable-nodpi/splash_brand.webp` 转换而来（scripts/make_assets.py）。
     static let image: UIImage? = {
         if let url = Bundle.main.url(forResource: "splash_brand", withExtension: "png"),
@@ -43,6 +75,20 @@ enum SplashArtwork {
             return UIImage(data: data)
         }
         return nil
+    }()
+
+    /// 锚点由 `scripts/make_assets.py` 量测并写入 `Resources/splash_anchor.json`。
+    static let anchor: Anchor = {
+        guard let url = Bundle.main.url(forResource: "splash_anchor", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let object = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] else {
+            return Anchor()
+        }
+        var anchor = Anchor()
+        if let y = object["contentCenterY"] as? Double { anchor.y = CGFloat(y) }
+        if let x = object["contentCenterX"] as? Double { anchor.x = CGFloat(x) }
+        anchor.detected = (object["detected"] as? Bool) ?? false
+        return anchor
     }()
 }
 

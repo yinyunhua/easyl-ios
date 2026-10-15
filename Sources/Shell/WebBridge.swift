@@ -84,6 +84,18 @@ final class WebBridge: NSObject, WKScriptMessageHandler {
             model.setPullRefreshEnabled(call.b0 ?? true)
             resolve(id: call.id, value: true)
 
+        case "setOrientation":
+            model.setOrientation(call.s0 ?? "")
+            resolve(id: call.id, value: true)
+
+        case "enterFullscreen":
+            model.enterPlayerFullscreen()
+            resolve(id: call.id, value: true)
+
+        case "exitFullscreen":
+            model.exitPlayerFullscreen()
+            resolve(id: call.id, value: true)
+
         case "openUrl":
             let raw = (call.s0 ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
             guard !raw.isEmpty, let url = URL(string: raw) else {

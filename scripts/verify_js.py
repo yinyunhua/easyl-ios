@@ -16,7 +16,9 @@ SRC = os.path.join(ROOT, "Sources", "Shell", "BridgeScripts.swift")
 BLOCKS = {
     "bridgeJS": "bridge.js",
     "patchJS": "patch.js",
+    "iosPatchJS": "ios_patch.js",
     "handleBackJS": "handle_back.js",
+    "extraAdsFlagJS": "extra_ads_flag.js",
 }
 
 
@@ -37,6 +39,8 @@ def extract_blocks(text):
             continue
         body = match.groups()[-1]
         # 插值 -> 占位值（模拟运行时注入的真实形态）
+        body = body.replace(r"\##(hostsJSON)", "['google.huge1-7wnjsk.com','hgxml.00api-agy5u.com']")
+        body = body.replace(r'\##(enabled ? "true" : "false")', "true")
         body = body.replace(r"\##(version)", "2.0.5")
         body = body.replace(r"\##(api)", "https://hgxml.00api-agy5u.com/api")
         body = body.replace(r"\##(backup)", "https://rules.googlexml.com/api")

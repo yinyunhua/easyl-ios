@@ -40,18 +40,32 @@ struct WebShellView: UIViewRepresentable {
         // 混合内容（对应 setMixedContentMode(MIXED_CONTENT_ALWAYS_ALLOW)）由 Info.plist 的
         // NSAllowsArbitraryLoads / NSAllowsArbitraryLoadsInWebContent 覆盖，不触碰私有键。
 
-        // 尽早标记原生外壳（对应 injectNativeBridge 中的 __HG_NATIVE_APP__）。
-        // 完整桥接 + VIP 补丁按 Android 时序在 didStart / didFinish 注入。
-        controller.addUserScript(WKUserScript(
-            source: "window.__HG_NATIVE_APP__=1;",
-            injectionTime: .atDocumentStart,
-            forMainFrameOnly: false
-        ))
+        // 注入时机：全部在 atDocumentStart 装好，避免首页首个数据请求抢在补丁之前
+        // （真机上实测：只靠 didStart 的 evaluateJavaScript 会漏掉首页两排外链广告图标）。
+        // 桥接/补丁都带守卫可重复执行；页面开始/结束时仍会再注入一次以刷新 apiBase / token / 开关。
+        let ownHosts = BridgeScripts.staticOwnHosts(includeDebugSeeds: SeedCatalog.usesDebugSeeds)
+        let startScripts = [
+            "window.__HG_NATIVE_APP__=1;",
+            BridgeScripts.extraAdsFlagJS(AppConfig.extraAdsEnabled),
+            BridgeScripts.bridgeJS(appVersion: AppConfig.appVersion,
+                                   apiBase: AppConfig.apiSeed,
+                                   apiBaseBackup: AppConfig.apiSeedBackup),
+            BridgeScripts.patchJS,
+            BridgeScripts.iosPatchJS(ownHosts: ownHosts),
+        ]
+        for source in startScripts {
+            controller.addUserScript(WKUserScript(
+                source: source,
+                injectionTime: .atDocumentStart,
+                forMainFrameOnly: false
+            ))
+        }
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
-        webView.allowsBackForwardNavigationGestures = true
+        // 关掉自带侧滑返回，改用左缘手势走「先问 H5」的返回语义（对齐 Android 物理返回键）
+        webView.allowsBackForwardNavigationGestures = false
         webView.allowsLinkPreview = true
         webView.isOpaque = true
         webView.backgroundColor = AppConfig.chromeColor
@@ -76,6 +90,13 @@ struct WebShellView: UIViewRepresentable {
         webView.scrollView.refreshControl = refresh
 
         webView.customUserAgent = WebShellView.composedUserAgent()
+
+        // 左缘返回手势：先问 H5（__HG_HANDLE_BACK__），未处理才 goBack。取代原悬浮按钮，避免压住 H5 头部图标。
+        let edgePan = UIScreenEdgePanGestureRecognizer(target: context.coordinator,
+                                                       action: #selector(Coordinator.handleEdgePan(_:)))
+        edgePan.edges = .left
+        edgePan.cancelsTouchesInView = false
+        webView.addGestureRecognizer(edgePan)
 
         let bridge = WebBridge(model: model, webView: webView)
         controller.add(bridge, name: AppConfig.messageHandlerName)
@@ -157,6 +178,15 @@ struct WebShellView: UIViewRepresentable {
         @objc func handleRefresh(_ sender: UIRefreshControl) {
             sender.endRefreshing()
             model.reload()
+        }
+
+        /// 左缘右滑 = 返回（对齐 Android 物理返回键语义）。
+        @objc func handleEdgePan(_ gesture: UIScreenEdgePanGestureRecognizer) {
+            guard gesture.state == .ended else { return }
+            let translation = gesture.translation(in: gesture.view).x
+            let velocity = gesture.velocity(in: gesture.view).x
+            guard translation > 60 || velocity > 500 else { return }
+            model.handleBack()
         }
 
         // MARK: 导航策略（对应 shouldOverrideUrlLoading → handleNav）

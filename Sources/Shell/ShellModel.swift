@@ -33,6 +33,10 @@ final class ShellModel: ObservableObject {
     @Published private(set) var splashVisible = true
     @Published private(set) var splashAlpha: Double = 1
     @Published private(set) var pullRefreshEnabled = true
+    /// 当前是否在播放页（play.php / /play），决定是否显示横屏键、是否禁下拉刷新
+    @Published private(set) var isPlayerPage = false
+    /// 是否已锁定横屏（播放态）
+    @Published private(set) var isLandscapeForced = false
     @Published private(set) var canGoBack = false
     @Published private(set) var loadProgress: Double = 0
     @Published var showSettings = false
@@ -68,6 +72,8 @@ final class ShellModel: ObservableObject {
             "pageFinishedOnce: \(pageFinishedOnce)",
             "h5SplashReady: \(h5SplashReady)",
             "pullRefreshEnabled: \(pullRefreshEnabled)",
+            "isPlayerPage: \(isPlayerPage)",
+            "landscapeForced: \(isLandscapeForced)",
             "seeds(debug=\(SeedCatalog.usesDebugSeeds)): \(SeedCatalog.activeSeeds().joined(separator: " "))",
             "promoBindToken: \(PromoBindStore.token().isEmpty ? "-" : PromoBindStore.token())",
             "simulator: \(EnvProbe.isSimulator)",
@@ -273,7 +279,62 @@ final class ShellModel: ObservableObject {
         } else {
             path = trimmed
         }
-        pullRefreshEnabled = !Self.isPlayPath(path)
+        let play = Self.isPlayPath(path)
+        isPlayerPage = play
+        pullRefreshEnabled = !play
+        // 离开播放页时自动恢复竖屏，避免误锁横屏
+        if !play, isLandscapeForced {
+            exitPlayerFullscreen()
+        }
+    }
+
+    // MARK: - 播放页横屏 / 全屏（iOS 无 orientation.lock，由外壳提供）
+
+    /// 进播放态：锁横屏 + 优先进原生全屏播放，再通知 H5 重新排版。
+    func enterPlayerFullscreen() {
+        AppOrientation.shared.lockLandscape()
+        isLandscapeForced = true
+        webView?.evaluateJavaScript(BridgeScripts.enterNativeFullscreenJS) { result, _ in
+            if let text = result as? String, text != "native", text != "std" {
+                HGLog.w("Orientation", "no fullscreen-capable video element (result=\(text))；仅锁定横屏")
+            }
+        }
+        scheduleResizeDispatch()
+    }
+
+    /// 退出播放态：退出全屏 + 恢复竖屏。
+    func exitPlayerFullscreen() {
+        AppOrientation.shared.lockPortrait()
+        isLandscapeForced = false
+        webView?.evaluateJavaScript(BridgeScripts.exitNativeFullscreenJS, completionHandler: nil)
+        scheduleResizeDispatch()
+    }
+
+    func togglePlayerFullscreen() {
+        isLandscapeForced ? exitPlayerFullscreen() : enterPlayerFullscreen()
+    }
+
+    /// 对应 H5 的 `HGApp.setOrientation('landscape'|'portrait'|'auto')`。
+    func setOrientation(_ mode: String) {
+        switch mode.lowercased() {
+        case "landscape", "land", "horizontal":
+            enterPlayerFullscreen()
+        case "portrait", "port", "vertical":
+            exitPlayerFullscreen()
+        default:
+            AppOrientation.shared.unlock()
+            isLandscapeForced = false
+            scheduleResizeDispatch()
+        }
+    }
+
+    /// 旋转/几何变化后通知 H5 重排，否则播放器仍按旧视口居中而看起来偏心。
+    func scheduleResizeDispatch() {
+        for delay in [0.35, 0.9] {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                self?.webView?.evaluateJavaScript(BridgeScripts.resizeDispatchJS, completionHandler: nil)
+            }
+        }
     }
 
     /// 对应 `isPlayPath`：命中 play.php 或 `/play` `/play/` 前缀时关闭下拉刷新。
@@ -388,14 +449,25 @@ final class ShellModel: ObservableObject {
 
     // MARK: - 返回（对应 handleNativeBack）
 
+    /// 对应 `handleNativeBack`：**先问 H5**（`__HG_HANDLE_BACK__`），返回 `handled` 就停手；
+    /// 否则能后退就后退。iOS 用屏幕左缘手势触发（不再放悬浮按钮，避免压住 H5 头部图标）。
     func handleBack() {
         guard let webView else { return }
-        if canGoBack {
-            webView.goBack()
-            return
+        webView.evaluateJavaScript(BridgeScripts.handleBackJS) { [weak self] result, _ in
+            Task { @MainActor in
+                guard let self else { return }
+                let text = (result as? String) ?? ""
+                if text.lowercased().contains("handled") {
+                    HGLog.d("MainActivity", "back handled by H5")
+                    return
+                }
+                if webView.canGoBack {
+                    webView.goBack()
+                } else {
+                    self.canGoBack = false
+                }
+            }
         }
-        // 首页再返回：交给 H5 的 __HG_HANDLE_BACK__，未处理则静默（iOS 无 finish）
-        webView.evaluateJavaScript(BridgeScripts.handleBackJS) { _, _ in }
     }
 
     // MARK: - 更新流程（对应 requestUpdateFromJs / notifyUpdateResult）
@@ -467,9 +539,22 @@ final class ShellModel: ObservableObject {
         )
         let cache = BridgeScripts.bridgeCacheJS(apiBase: runtimeAPIBase, promoAgentId: "")
         let promo = BridgeScripts.promoTokenJS(PromoBindStore.token())
+        let extra = BridgeScripts.extraAdsFlagJS(AppConfig.extraAdsEnabled)
+        let v2 = BridgeScripts.iosPatchJS(ownHosts: BridgeScripts.staticOwnHosts(includeDebugSeeds: SeedCatalog.usesDebugSeeds)
+            + trustedHosts)
         webView.evaluateJavaScript(bridge, completionHandler: nil)
-        webView.evaluateJavaScript(cache + promo, completionHandler: nil)
+        webView.evaluateJavaScript(cache + promo + extra, completionHandler: nil)
         webView.evaluateJavaScript(BridgeScripts.patchJS, completionHandler: nil)
+        webView.evaluateJavaScript(v2, completionHandler: nil)
+        webView.evaluateJavaScript("try{window.HGApp&&window.HGApp.sweepAds&&window.HGApp.sweepAds();}catch(e){}", completionHandler: nil)
+    }
+
+    /// 设置页切换「额外去广告」后实时生效（无需重装）。
+    func applyExtraAdsSetting() {
+        guard let webView else { return }
+        let js = BridgeScripts.extraAdsFlagJS(AppConfig.extraAdsEnabled)
+            + "try{window.HGApp&&window.HGApp.sweepAds&&window.HGApp.sweepAds();}catch(e){}"
+        webView.evaluateJavaScript(js, completionHandler: nil)
     }
 
     /// 让原生侧主动刷新一次桥接缓存（促销 token 变化时）。

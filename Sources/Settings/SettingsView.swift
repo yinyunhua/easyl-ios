@@ -74,6 +74,43 @@ struct SettingsView: View {
                     }
                 }
 
+                Section("去广告 / 播放") {
+                    Toggle("额外去广告（首页外链图标栅格、广告位字段）", isOn: Binding(
+                        get: { AppConfig.extraAdsEnabled },
+                        set: { newValue in
+                            AppConfig.setExtraAdsEnabled(newValue)
+                            model.applyExtraAdsSetting()
+                            showToast(newValue ? "已开启额外去广告" : "已关闭额外去广告")
+                        }
+                    ))
+                    Button("立即清扫一次（DOM + 字段）") {
+                        model.applyExtraAdsSetting()
+                        showToast("已执行清扫")
+                    }
+                    Text("播放页拖动进度条后自动续播、H5 优先返回键均由 iOS 增强补丁 v2 提供（__HG_PATCH_V2__）。")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                }
+
+                Section("播放页 / 横屏") {
+                    Text("播放页：\(model.isPlayerPage ? "是" : "否")；横屏锁定：\(model.isLandscapeForced ? "是" : "否")")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                    Button("锁定横屏 + 原生全屏") { model.enterPlayerFullscreen() }
+                    Button("恢复竖屏 + 退出全屏") { model.exitPlayerFullscreen() }
+                    Button("通知 H5 重新排版（resize / orientationchange）") {
+                        model.scheduleResizeDispatch()
+                        showToast("已通知 H5 重排")
+                    }
+                    Button("重跑播放器居中兜底") {
+                        model.applyExtraAdsSetting()
+                        showToast("已执行")
+                    }
+                    Text("iOS 不支持 screen.orientation.lock，横屏由外壳的几何更新 + webkitEnterFullscreen 实现；离开播放页会自动恢复竖屏。")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                }
+
                 Section("桥接与补丁") {
                     Button("重新注入 HuangGuoNative + 补丁") {
                         model.injectBridge()
@@ -125,7 +162,7 @@ struct SettingsView: View {
             showToast("WebView 未就绪")
             return
         }
-        webView.evaluateJavaScript("JSON.stringify({native:!!window.__HG_NATIVE_APP__,patch:(window.HGApp&&window.HGApp.__patch)||'',vip:typeof window.HuangGuoNative})") { result, error in
+        webView.evaluateJavaScript("JSON.stringify({native:!!window.__HG_NATIVE_APP__,patch:(window.HGApp&&window.HGApp.__patch)||'',iosPatch:(window.HGApp&&window.HGApp.__patchIos)||'',extraAds:(typeof window.__HG_EXTRA_ADS__==='undefined'?'default':window.__HG_EXTRA_ADS__),seekFix:true,vip:typeof window.HuangGuoNative})") { result, error in
             if let error {
                 showToast("校验失败：\(error.localizedDescription)")
             } else if let text = result as? String {

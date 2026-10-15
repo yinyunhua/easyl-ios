@@ -92,6 +92,20 @@ enum AppConfig {
 
     // MARK: - 本地调试
 
+    /// 额外去广告（首页外链图标栅格 / 广告字段）开关，默认开启。
+    enum StoreKey {
+        static let extraAds = "hg.patch.extraAds"
+    }
+
+    static var extraAdsEnabled: Bool {
+        if UserDefaults.standard.object(forKey: StoreKey.extraAds) == nil { return true }
+        return UserDefaults.standard.bool(forKey: StoreKey.extraAds)
+    }
+
+    static func setExtraAdsEnabled(_ enabled: Bool) {
+        UserDefaults.standard.set(enabled, forKey: StoreKey.extraAds)
+    }
+
     /// Debug 构建才启用 debug 种子（对应 BuildConfig.DEBUG）。Release 下用户可在设置页手动覆盖。
     static var isDebugBuild: Bool {
         #if DEBUG
