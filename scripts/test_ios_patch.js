@@ -290,12 +290,30 @@ async function run() {
   check('★隐藏导航后未触发回滚', s.HGApp.__lastRollback === undefined, String(s.HGApp.__lastRollback || '无回滚'));
 
   check('控件行被钉住常显（进度条不再自动消失）', dom.controls._classes.has('hg-controls-pinned'), dom.controls._classes.has('hg-controls-pinned') ? '已钉' : '未钉');
-  check('选集条贴底', dom.strip._classes.has('hg-strip-bottom'));
-  check('为选集条预留高度（控件上移，不再遮挡）', dom.box.style.paddingBottom === '60px', String(dom.box.style.paddingBottom));
+  check('选集条默认隐藏（不再遮挡画面）', dom.strip._classes.has('hg-strip-hidden'), dom.strip._classes.has('hg-strip-hidden') ? '已隐藏' : '未隐藏');
+  s.HGApp.setStripHidden(false);
+  check('恢复选集条：贴底 + 预留高度（控件上移不遮挡）',
+    dom.strip._classes.has('hg-strip-bottom') && dom.box.style.paddingBottom === '60px',
+    `bottom=${dom.strip._classes.has('hg-strip-bottom')} pad=${dom.box.style.paddingBottom}`);
+  s.HGApp.setStripHidden(true);
+  check('再次隐藏选集条', dom.strip._classes.has('hg-strip-hidden'));
   check('速度键左移', dom.speed._classes.has('hg-speed-shifted'));
   check('竖屏视频满宽渲染（清晰度）', dom.video._classes.has('hg-fill-video'));
   check('回传速度键坐标给原生（原生全屏键贴其右侧）',
     bridgeMessages.some((m) => String(m).indexOf('playerControls') >= 0), String(bridgeMessages[bridgeMessages.length - 1] || '无'));
+
+  const info = JSON.parse(String(s.HGApp.videoInfo()));
+  check('上报视频比例（用于自动横竖屏）', info.w > 0 && info.h > 0, JSON.stringify(info));
+  bridgeMessages.length = 0;
+  fire('webkitbeginfullscreen', null);
+  check('进入全屏时上报 fullscreenState=1',
+    bridgeMessages.some((m) => String(m).indexOf('fullscreenState') >= 0 && String(m).indexOf('"args":[1') >= 0),
+    String(bridgeMessages[bridgeMessages.length - 1] || '无'));
+  bridgeMessages.length = 0;
+  fire('webkitendfullscreen', null);
+  check('退出全屏时上报 fullscreenState=0',
+    bridgeMessages.some((m) => String(m).indexOf('fullscreenState') >= 0 && String(m).indexOf('"args":[0') >= 0),
+    String(bridgeMessages[bridgeMessages.length - 1] || '无'));
 
   // 抖动修复：同尺寸下重复 layoutPlayer 不应重写 transform
   const t1 = String(dom.video.style.transform || '');

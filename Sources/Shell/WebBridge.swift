@@ -97,6 +97,15 @@ final class WebBridge: NSObject, WKScriptMessageHandler {
             model.exitPlayerFullscreen()
             resolve(id: call.id, value: true)
 
+        case "fullscreenState":
+            // H5 进/出系统全屏时上报：[active, videoWidth, videoHeight]
+            model.handleFullscreenState(
+                active: (call.nums.first ?? 0) >= 1,
+                width: call.nums.count >= 2 ? call.nums[1] : 0,
+                height: call.nums.count >= 3 ? call.nums[2] : 0
+            )
+            resolve(id: call.id, value: true)
+
         case "playerControls":
             // 页面把 H5 速度键的坐标回传上来：原生全屏键据此贴在它右侧同一行
             if call.nums.count >= 4 {

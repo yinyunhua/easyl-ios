@@ -543,7 +543,8 @@ enum BridgeScripts {
                   '.hg-fill-video{width:100%!important;max-width:100%!important;height:auto!important;max-height:100%!important;object-fit:contain!important;margin:0 auto!important}'+
                   '.hg-controls-pinned{opacity:1!important;visibility:visible!important;transform:none!important;pointer-events:auto!important;transition:none!important}'+
                   '.hg-speed-shifted{margin-right:44px!important}'+
-                  '.hg-strip-bottom{bottom:0!important;z-index:6!important}';
+                  '.hg-strip-bottom{bottom:0!important;z-index:6!important}'+
+                  '.hg-strip-hidden{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important}';
                 (document.head||document.documentElement).appendChild(s);
               }catch(e){}
             }
@@ -862,8 +863,11 @@ enum BridgeScripts {
               try{
                 var v=biggestVideo();
                 if(!v){return null;}
-                var box=playerBox(v)||v.parentNode;
-                var row=findControlsRow(box);
+                var row=findControlsRowDoc();
+                if(!row){
+                  var box=playerBox(v)||v.parentNode;
+                  row=findControlsRow(box);
+                }
                 if(row&&row.classList){
                   if(!row.classList.contains('hg-controls-pinned')){ row.classList.add('hg-controls-pinned'); }
                   pinnedRow=row;
@@ -902,8 +906,11 @@ enum BridgeScripts {
               try{
                 var v=biggestVideo();
                 if(!v){return;}
-                var box=playerBox(v)||v.parentNode;
-                var el=findSpeedEl(box);
+                var el=findSpeedElDoc();
+                if(!el){
+                  var box=playerBox(v)||v.parentNode;
+                  el=findSpeedEl(box);
+                }
                 if(!el){return;}
                 speedEl=el;
                 if(!el.classList.contains('hg-speed-shifted')){ el.classList.add('hg-speed-shifted'); }
@@ -937,7 +944,7 @@ enum BridgeScripts {
                   v.classList.add('hg-fill-video');   // 竖屏也按满宽渲染 → 更清晰
                 }
                 var row=pinControls();
-                reserveStripSpace(row);
+                applyStripPolicy();
                 shiftSpeedAndReport();
                 centerVideo();
                 return 'layout';
@@ -945,6 +952,115 @@ enum BridgeScripts {
             }
             window.HGApp.layoutPlayer=layoutPlayer;
             window.HGApp.setPlayerTuning=function(on){ window.__HG_PLAYER_TUNE__=!!on; lastLayoutSig=''; return layoutPlayer(true); };
+            // ---- v2.4：全文档范围定位速度键 / 隐藏选集条 / 视频比例与全屏状态上报 ----
+            function leafByText(pattern, limit){
+              try{
+                var nodes=document.querySelectorAll('span,div,p,button,a,i');
+                var seen=0;
+                for(var i=0;i<nodes.length;i++){
+                  var el=nodes[i];
+                  if(el.children&&el.children.length>0){continue;}      // 只看叶子节点，避免 textContent 大范围拼接
+                  seen++;
+                  if(seen>limit){break;}
+                  var t=(el.textContent||'').trim();
+                  if(pattern.test(t)){
+                    var r=el.getBoundingClientRect();
+                    if(r.width>0&&r.height>0){return el;}
+                  }
+                }
+              }catch(e){}
+              return null;
+            }
+            function findSpeedElDoc(){
+              return leafByText(/^[0-9](\.[0-9])?x$/i, 600) || leafByText(/^(倍速|全屏)$/, 600);
+            }
+            function findControlsRowDoc(){
+              try{
+                var vh=window.innerHeight||0;
+                var nodes=document.querySelectorAll('div,section,footer,ul');
+                var best=null,bestH=1e9,seen=0;
+                for(var i=0;i<nodes.length;i++){
+                  var el=nodes[i];
+                  seen++;
+                  if(seen>500){break;}
+                  if(el.children&&el.children.length>12){continue;}
+                  var t=(el.innerText||el.textContent||'');
+                  if(t.length>200||!/\d{1,2}:\d{2}/.test(t)){continue;}
+                  var r=el.getBoundingClientRect();
+                  if(!r.height||r.height>vh*0.24){continue;}
+                  if(r.top<vh*0.35){continue;}
+                  if(r.height<bestH){bestH=r.height;best=el;}
+                }
+                return best;
+              }catch(e){return null;}
+            }
+            function findStripElDoc(){
+              try{
+                var vh=window.innerHeight||0, vw=window.innerWidth||0;
+                var nodes=document.querySelectorAll('div,section,footer');
+                var best=null,bestH=1e9,seen=0;
+                for(var i=0;i<nodes.length;i++){
+                  var el=nodes[i];
+                  seen++;
+                  if(seen>600){break;}
+                  var r=el.getBoundingClientRect();
+                  if(!r.height||r.height>vh*0.14){continue;}
+                  if(r.width<vw*0.6){continue;}
+                  var t=(el.innerText||el.textContent||'');
+                  if(t.indexOf('选集')<0||t.length>140){continue;}
+                  if(r.height<bestH){bestH=r.height;best=el;}
+                }
+                return best;
+              }catch(e){return null;}
+            }
+            function applyStripPolicy(){
+              try{
+                var v=biggestVideo();
+                if(!v){return 'novideo';}
+                var strip=pinnedStrip||findStripElDoc();
+                if(!strip){return 'nostrip';}
+                pinnedStrip=strip;
+                var hide=(window.__HG_STRIP_HIDDEN__===undefined)?true:!!window.__HG_STRIP_HIDDEN__;
+                if(hide){
+                  if(!strip.classList.contains('hg-strip-hidden')){ strip.classList.add('hg-strip-hidden'); }
+                  strip.classList.remove('hg-strip-bottom');
+                  return 'hidden';
+                }
+                strip.classList.remove('hg-strip-hidden');
+                if(!strip.classList.contains('hg-strip-bottom')){ strip.classList.add('hg-strip-bottom'); }
+                var sr=strip.getBoundingClientRect();
+                var box=playerBox(v)||v.parentNode;
+                if(box&&box.style&&sr.height>4){
+                  var pad=Math.round(sr.height)+4;
+                  if(box.__hgStripPad!==pad){ box.style.paddingBottom=pad+'px'; box.__hgStripPad=pad; }
+                }
+                return 'visible';
+              }catch(e){return 'err';}
+            }
+            function videoInfo(){
+              try{
+                var v=biggestVideo();
+                if(!v){return JSON.stringify({w:0,h:0});}
+                var w=v.videoWidth||0, h=v.videoHeight||0;
+                if(!w||!h){
+                  var r=v.getBoundingClientRect();
+                  return JSON.stringify({w:Math.round(r.width),h:Math.round(r.height),fallback:true});
+                }
+                return JSON.stringify({w:w,h:h});
+              }catch(e){return JSON.stringify({w:0,h:0});}
+            }
+            function reportFullscreen(active){
+              try{
+                var info=JSON.parse(videoInfo());
+                postNative('fullscreenState',[active?1:0,info.w||0,info.h||0]);
+              }catch(e){}
+            }
+            window.HGApp.videoInfo=videoInfo;
+            window.HGApp.setStripHidden=function(on){ window.__HG_STRIP_HIDDEN__=!!on; return applyStripPolicy(); };
+            window.HGApp.reportFullscreenNow=function(){ reportFullscreen(!!fsActive); return true; };
+
+            document.addEventListener('webkitbeginfullscreen',function(){ fsActive=true; reportFullscreen(true); },true);
+            document.addEventListener('webkitendfullscreen',function(){ fsActive=false; reportFullscreen(false); },true);
             function playerDiag(){
               try{
                 var vs=document.querySelectorAll('video');
@@ -961,6 +1077,8 @@ enum BridgeScripts {
                   tuning:playerTuning(),
                   pinned:!!pinnedRow,
                   strip:!!pinnedStrip,
+                  stripHidden:(pinnedStrip&&pinnedStrip.classList)?pinnedStrip.classList.contains('hg-strip-hidden'):null,
+                  fullscreen:fsActive,
                   nudge:(function(){try{var v=biggestVideo();return v&&typeof v.__hgNudge==='number'?Math.round(v.__hgNudge):0;}catch(e){return 0;}})()
                 });
               }catch(e){ return '{}'; }

@@ -39,6 +39,10 @@ final class ShellModel: ObservableObject {
     @Published private(set) var isLandscapeForced = false
     /// H5 播放器「速度键」的坐标（点）：原生全屏键据此贴到它右侧同一行
     @Published private(set) var playerControlsFrame: CGRect?
+    /// 系统全屏播放器是否正在展示（由 H5 的 webkitbegin/endfullscreen 上报）
+    @Published private(set) var systemFullscreenActive = false
+    /// 当前视频是否为横向（用于进全屏后自动切横竖屏）；nil = 未知
+    @Published private(set) var videoIsLandscape: Bool?
     @Published private(set) var canGoBack = false
     @Published private(set) var loadProgress: Double = 0
     @Published var showSettings = false
@@ -290,6 +294,8 @@ final class ShellModel: ObservableObject {
             if play {
                 verifyPlayerEnhancement()
                 schedulePlayerLayout()
+                refreshVideoOrientation()
+                applyStripPolicy()
             } else {
                 playerControlsFrame = nil
             }
@@ -349,6 +355,49 @@ final class ShellModel: ObservableObject {
         playerControlsFrame = frame
     }
 
+    /// H5 上报系统全屏状态：按视频比例自动切横竖屏（横视频转横屏、竖视频保持竖屏）。
+    func handleFullscreenState(active: Bool, width: Double, height: Double) {
+        systemFullscreenActive = active
+        if width > 0, height > 0 {
+            videoIsLandscape = width >= height
+            HGLog.i("Fullscreen", "video \(Int(width))x\(Int(height)) active=\(active)")
+        }
+        guard active else {
+            AppOrientation.shared.unlock()
+            return
+        }
+        if let landscape = videoIsLandscape {
+            if landscape {
+                AppOrientation.shared.lockLandscape()
+            } else {
+                AppOrientation.shared.lockPortrait()
+            }
+        }
+    }
+
+    /// 主动问一次视频比例（进播放页时调用，供按下全屏键时同步决定方向）。
+    func refreshVideoOrientation() {
+        guard isPlayerPage, let webView else { return }
+        webView.evaluateJavaScript("try{window.HGApp&&window.HGApp.videoInfo?window.HGApp.videoInfo():''}catch(e){''}") { result, _ in
+            guard let text = result as? String, let data = text.data(using: .utf8),
+                  let obj = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] else { return }
+            let w = (obj["w"] as? Double) ?? Double((obj["w"] as? Int) ?? 0)
+            let h = (obj["h"] as? Double) ?? Double((obj["h"] as? Int) ?? 0)
+            guard w > 0, h > 0, obj["fallback"] == nil else { return }
+            Task { @MainActor in
+                self.videoIsLandscape = w >= h
+                HGLog.i("Fullscreen", "video aspect cached \(Int(w))x\(Int(h))")
+            }
+        }
+    }
+
+    /// 选集条隐藏策略（默认隐藏，避免压画面）。
+    func applyStripPolicy() {
+        guard isPlayerPage, let webView else { return }
+        let hide = AppConfig.hidePlayerStrip ? "true" : "false"
+        webView.evaluateJavaScript("try{window.HGApp&&window.HGApp.setStripHidden&&window.HGApp.setStripHidden(\(hide));}catch(e){}", completionHandler: nil)
+    }
+
     /// 调优开关即时生效。
     func applyPlayerTuning() {
         guard let webView else { return }
@@ -393,7 +442,13 @@ final class ShellModel: ObservableObject {
 
     /// 进播放态：隐藏 H5 导航 + 锁横屏 + 沉浸式铺满 + 优先进原生全屏播放。
     func enterPlayerFullscreen() {
-        AppOrientation.shared.unlock()   // 不再锁横屏：跟随设备方向（竖屏也能进系统全屏）
+        // 先按视频比例定方向（横视频转横屏、竖视频保持竖屏），再进系统全屏，避免横视频竖着显示
+        if let landscape = videoIsLandscape {
+            if landscape { AppOrientation.shared.lockLandscape() } else { AppOrientation.shared.lockPortrait() }
+        } else {
+            AppOrientation.shared.unlock()
+        }
+        refreshVideoOrientation()
         isLandscapeForced = true
         setImmersiveJS(true)
         webView?.evaluateJavaScript(BridgeScripts.enterNativeFullscreenJS) { result, _ in
@@ -418,6 +473,13 @@ final class ShellModel: ObservableObject {
     }
 
     func togglePlayerFullscreen() {
+        if systemFullscreenActive {
+            webView?.evaluateJavaScript(BridgeScripts.exitNativeFullscreenJS, completionHandler: nil)
+            systemFullscreenActive = false
+            AppOrientation.shared.unlock()
+            isLandscapeForced = false
+            return
+        }
         isLandscapeForced ? exitPlayerFullscreen() : enterPlayerFullscreen()
     }
 

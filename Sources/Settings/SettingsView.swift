@@ -99,6 +99,14 @@ struct SettingsView: View {
                             showToast(newValue ? "已开启播放器调优" : "已关闭播放器调优")
                         }
                     ))
+                    Toggle("播放页隐藏「选集」条（避免压住画面）", isOn: Binding(
+                        get: { AppConfig.hidePlayerStrip },
+                        set: { newValue in
+                            AppConfig.setHidePlayerStrip(newValue)
+                            model.applyStripPolicy()
+                            showToast(newValue ? "已隐藏选集条" : "已显示选集条")
+                        }
+                    ))
                     Button("立即清扫 + 重排播放器") {
                         model.applyExtraAdsSetting()
                         showToast("已执行")

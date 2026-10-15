@@ -137,7 +137,7 @@ struct RootView: View {
             Button {
                 model.togglePlayerFullscreen()
             } label: {
-                Image(systemName: model.isLandscapeForced
+                Image(systemName: (model.isLandscapeForced || model.systemFullscreenActive)
                       ? "arrow.down.right.and.arrow.up.left"
                       : "arrow.up.left.and.arrow.down.right")
                     .font(.system(size: 13, weight: .semibold))
@@ -149,7 +149,7 @@ struct RootView: View {
             }
             .opacity(0.62)
             .position(x: point.x, y: point.y)
-            .accessibilityLabel(model.isLandscapeForced ? "退出全屏" : "全屏播放")
+            .accessibilityLabel((model.isLandscapeForced || model.systemFullscreenActive) ? "退出全屏" : "全屏播放")
         }
     }
 

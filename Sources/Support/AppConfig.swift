@@ -97,6 +97,7 @@ enum AppConfig {
         static let extraAds = "hg.patch.extraAds"
         static let playerExtra = "hg.patch.playerExtra"
         static let playerTune = "hg.player.tune"
+        static let hideStrip = "hg.player.hideStrip"
     }
 
     static var extraAdsEnabled: Bool {
@@ -126,6 +127,16 @@ enum AppConfig {
 
     static func setPlayerTuneEnabled(_ enabled: Bool) {
         UserDefaults.standard.set(enabled, forKey: StoreKey.playerTune)
+    }
+
+    /// 播放页隐藏「选集 · 更新至第X集 · 在线观看」条（避免压住画面）。默认开启。
+    static var hidePlayerStrip: Bool {
+        if UserDefaults.standard.object(forKey: StoreKey.hideStrip) == nil { return true }
+        return UserDefaults.standard.bool(forKey: StoreKey.hideStrip)
+    }
+
+    static func setHidePlayerStrip(_ enabled: Bool) {
+        UserDefaults.standard.set(enabled, forKey: StoreKey.hideStrip)
     }
 
     /// Debug 构建才启用 debug 种子（对应 BuildConfig.DEBUG）。Release 下用户可在设置页手动覆盖。
