@@ -141,11 +141,41 @@ bash scripts/build_unsigned_ipa.sh  # 产出 HgForIOS-unsigned.ipa
 
 ---
 
-## 5. 未执行 / 待验证
+## 5. 出包结果（GitHub Actions 实跑）
 
-- **未执行**：本机为 Windows（无 Xcode / 无 swiftc），**未做真实编译**、未跑真机、未出 IPA。首次构建命令：`bash scripts/build_unsigned_ipa.sh`（或推送后由 Actions 出 `HgForIOS-unsigned-ipa`）。
-- **未执行**：未对三个正式种子做实时探测（`https://google.huge1-7wnjsk.com/` 等）；`EntryProbe` 逻辑按反汇编复刻（GET + `Accept: text/html,*/*` + 2500ms + 首个 2xx），可达性需真机首启验证。
+| 项 | 值 |
+|---|---|
+| 仓库 / 分支 | `github.com/yinyunhua/easyl-ios` → `hgforios` |
+| 成功运行 | run **#13**（`conclusion=success`，macos-14 + Xcode 15.4） |
+| Release（免登录下载） | `https://github.com/yinyunhua/easyl-ios/releases/tag/hgforios-ipa-13` |
+| IPA | `https://github.com/yinyunhua/easyl-ios/releases/download/hgforios-ipa-13/HgForIOS-unsigned.ipa` |
+| 本地副本 | `hgtv_ios/dist/HgForIOS-unsigned.ipa`（2.17 MB） |
+| SHA256 | `A87F13E2FF52E598BAAFB6A945CCA484E983E955A4F461BC81E0FD8EC7623401` |
+| 校验脚本 | `python scripts/verify_ipa.py` → 结构 / Info.plist / arm64 可执行体 / 补丁标记 全部通过 |
+
+`verify_ipa.py` 实测输出要点：`CFBundleIdentifier=com.hg.app`、`CFBundleDisplayName=黄果漫剧`、`2.0.5(103)`、`MinimumOSVersion=16.0`、可执行体 `MH_MAGIC_64 / arm64`（884 KB）；二进制内命中 `__HG_PATCH_V1__`、`fakeVip`、`stripAds`、`unlockPlay`、`HuangGuoNative`、`__HG_API_SEED__`、`hg-app-update-result`、`hgtv[_-]([A-Za-z0-9]{16,64})`、API 种子与 H5 种子 —— 即 VIP 解锁与去广告补丁确实已编进 IPA。
+
+未签名，自签安装：Sideloadly / ESign / AltStore / TrollStore 任选，拖入 IPA 即可。
+
+首轮 CI（run #11/#12）失败暴露了 3 个真实编译错误，已修并复验：
+
+| 位置 | 错误 | 修正 |
+|---|---|---|
+| `PromoCapture.swift:149` | `'URL' has been renamed to 'url'`（UIPasteboard.URL 已废弃） | 改用 `pasteboard.url` |
+| `UpdateService.swift:60` | `call can throw, but it is not marked with 'try'` | 改 `try? self.fetchUpdateInfo(...)` |
+| `WebShellView.swift:141/145` | `reference to captured var 'self' in concurrently-executing code` | KVO 闭包内先取强引用 `model`，再 `Task { @MainActor in model... }` |
+
+另：Xcode 15.4 对 WebKit 回调给出 12 条 “main actor-isolated ... cannot be used to satisfy nonisolated protocol requirement” **告警**（非错误）。保留 `@MainActor` 写法，因为 Xcode 16 / iOS 18 SDK 起这些协议自带 `@MainActor`，加 `nonisolated` 反而会失败。
+
+---
+
+## 6. 未执行 / 待验证
+
+- **未执行**：本机 Windows 无 Xcode，本地未编译；编译与出包全部由 GitHub Actions 完成（run #13 成功）。
+- **未执行**：未在真机/模拟器安装运行，运行时行为（种子探测、H5 桥接、播放器）待真机首启验证。
+- **未执行**：未对三个正式种子做实时探测（`https://google.huge1-7wnjsk.com/` 等）；`EntryProbe` 逻辑按反汇编复刻（GET + `Accept: text/html,*/*` + 2500ms + 首个 2xx）。
 - **未执行**：AdServices 归因、`itms-services://` OTA、分享面板安装链路需真机 + 有效 Apple 账号验证。
 - **未执行**：`Resources/promo_bind_token.txt` 未随工程提供（渠道包打入该文件后 `captureFromBundleMarker` 才会命中，内容可为 `hgtv_<token>.apk` 或裸 token）。
 - 已知非致命差异：`.alert(item:)`、`.onChange(of:perform:)`、`NavigationView` 在 iOS 17+ 有弃用告警；UA 后缀使用固定模板（与 Android「系统默认 UA + 后缀」等价，不读私有 UA 键）。
 - 如需离线自测：设置页（Release 构建长按左下角 1.2s 呼出）打开「使用调试种子」，指向 `http://<局域网IP>:5173/` 的 Vite 开发服务。
+- 迭代方式：改完源码 `git push origin main:hgforios` → Actions 自动重编 → 新 Release 直接下载 IPA（工作流里含失败日志归档步骤，失败时把日志提交到 `_ci/last-error.log` 便于无 token 排查）。
