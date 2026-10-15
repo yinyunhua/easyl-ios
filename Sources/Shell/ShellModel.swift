@@ -285,6 +285,7 @@ final class ShellModel: ObservableObject {
         pullRefreshEnabled = !play
         if play != wasPlayer {
             setPlayerModeJS(play)
+            if play { verifyPlayerEnhancement() }
         }
         // 离开播放页时自动恢复竖屏，避免误锁横屏
         if !play, isLandscapeForced {
@@ -308,6 +309,36 @@ final class ShellModel: ObservableObject {
         webView?.evaluateJavaScript("try{window.HGApp&&window.HGApp.centerVideo&&window.HGApp.centerVideo();}catch(e){}", completionHandler: nil)
     }
 
+    /// 看门狗：进入播放页/沉浸式后读一次 JS 诊断，若视频不可见（或 JS 侧已回滚）就整体回退，
+    /// 宁可留导航也不能黑屏只剩声音。
+    private func verifyPlayerEnhancement() {
+        guard let webView else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+            webView.evaluateJavaScript("try{window.HGApp&&window.HGApp.playerDiag?window.HGApp.playerDiag():''}catch(e){''}") { result, _ in
+                guard let text = result as? String, !text.isEmpty else { return }
+                HGLog.i("Player", "diag: \(text)")
+                guard let data = text.data(using: .utf8),
+                      let object = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] else { return }
+                let videos = (object["videos"] as? Int) ?? 0
+                let visible = (object["visible"] as? Bool) ?? true
+                let rollback = (object["rollback"] as? String) ?? ""
+                guard videos > 0, !visible || !rollback.isEmpty else { return }
+                Task { @MainActor in
+                    guard let self else { return }
+                    HGLog.w("Player", "视频不可见（rollback=\(rollback)），回退播放页增强避免黑屏")
+                    self.setImmersiveJS(false)
+                    self.setPlayerModeJS(false)
+                    if self.isLandscapeForced {
+                        self.isLandscapeForced = false
+                        AppOrientation.shared.unlock()
+                    }
+                    self.centerVideoJS()
+                    self.showToast("已回退播放页增强（避免黑屏）")
+                }
+            }
+        }
+    }
+
     // MARK: - 播放页横屏 / 全屏（iOS 无 orientation.lock，由外壳提供）
 
     /// 进播放态：隐藏 H5 导航 + 锁横屏 + 沉浸式铺满 + 优先进原生全屏播放。
@@ -323,6 +354,7 @@ final class ShellModel: ObservableObject {
         scheduleResizeDispatch()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in self?.centerVideoJS() }
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in self?.centerVideoJS() }
+        verifyPlayerEnhancement()
     }
 
     /// 退出播放态：退出全屏 + 取消沉浸式 + 恢复竖屏。

@@ -1,11 +1,12 @@
 /**
- * iOS 增强补丁（__HG_PATCH_V2__）行为测试：在 Node 里搭最小 DOM/网络桩，跑真实注入脚本。
+ * iOS 增强补丁（__HG_PATCH_V2__）行为测试：Node 里搭最小 DOM/网络桩，跑真实注入脚本。
  *
  * 用法：node scripts/test_ios_patch.js _analysis/jscheck/ios_patch.js
  * 覆盖：
  *   1) 广告：SAFE_KEYS 清空 / 外链推广数组启发式清空 / 内链数组不误清
  *   2) 播放：seek 后自动续播；用户早于 seek 的主动暂停不误恢复
- *   3) 播放页：隐藏 H5 顶栏（logo+搜索）与底部 4 tab；沉浸式给播放器盒 + 视频铺满类；居中 nudge；退出时干净还原
+ *   3) 播放页：隐藏顶栏（logo+搜索）与底部 4 tab；**含 video 的外层容器绝不能被隐藏**（黑屏回归防护）
+ *   4) 沉浸式：只给文档流内容器撑高（fixed 播放层不动）；视频铺满；居中带幅度上限；退出干净还原
  */
 const fs = require('fs');
 const vm = require('vm');
@@ -19,9 +20,9 @@ const source = fs.readFileSync(sourcePath, 'utf8');
 
 let fakeNow = 1_000_000;
 const docListeners = {};
-const winListeners = {};
+const VH = 844;
+const VW = 390;
 
-// ---------------- 极简 DOM ----------------
 class El {
   constructor(tag, opts = {}) {
     this.tagName = String(tag).toUpperCase();
@@ -30,20 +31,21 @@ class El {
     this.parentNode = null;
     this.innerText = opts.text || '';
     this.textContent = opts.text || '';
+    this.id = opts.id || '';
     this._rect = opts.rect || { top: 0, left: 0, width: 0, height: 0, bottom: 0, right: 0 };
     this._classes = new Set(opts.classes || []);
+    this._hasVideo = !!opts.hasVideo;
+    this._position = opts.position || 'static';
+    this.hasSearchInput = !!opts.hasSearchInput;
     const self = this;
     this.classList = {
       add: (c) => self._classes.add(c),
       remove: (c) => self._classes.delete(c),
       contains: (c) => self._classes.has(c),
-      toString: () => Array.from(self._classes).join(' '),
     };
     this.attrs = {};
-    this.hasSearchInput = !!opts.hasSearchInput;
   }
   getBoundingClientRect() { return this._rect; }
-  setBoundingRect(r) { this._rect = r; }
   setAttribute(k, v) { this.attrs[k] = v; }
   getAttribute(k) { return this.attrs[k] === undefined ? '' : this.attrs[k]; }
   appendChild(child) { this.children.push(child); child.parentNode = this; return child; }
@@ -58,7 +60,9 @@ class El {
     return this.children.some((c) => c.contains(node));
   }
   querySelector(sel) {
-    if (this.hasSearchInput && String(sel).indexOf('input') >= 0) return new El('input');
+    const s = String(sel);
+    if (s === 'video') return this._hasVideo ? (this.__videoRef || true) : null;
+    if (this.hasSearchInput && s.indexOf('input') >= 0) return new El('input');
     return null;
   }
   querySelectorAll(sel) { return matchAll(this, sel); }
@@ -90,13 +94,36 @@ function buildDom() {
   documentElement.appendChild(head);
   documentElement.appendChild(body);
 
-  const header = new El('div', { text: '黄果漫剧 搜索', hasSearchInput: true, rect: { top: 40, left: 0, width: 390, height: 90, bottom: 130, right: 390 } });
-  const dock = new El('div', { text: '首页 分类 搜索 我的', rect: { top: 780, left: 0, width: 390, height: 80, bottom: 860, right: 390 } });
-  const box = new El('div', { rect: { top: 130, left: 0, width: 390, height: 650, bottom: 780, right: 390 } });
-  const video = new El('video', { rect: { top: 300, left: 0, width: 390, height: 220, bottom: 520, right: 390 } });
+  const header = new El('div', {
+    text: '黄果漫剧 搜索',
+    hasSearchInput: true,
+    rect: { top: 40, left: 0, width: VW, height: 90, bottom: 130, right: VW },
+  });
+
+  // 关键回归场景：外层容器同时「含 video」且「底部带 4 个主 tab 文案」——绝不能被隐藏
+  const pageWrapper = new El('div', {
+    text: '选集 连载 在线观看 首页 分类 搜索 我的',
+    hasVideo: true,
+    rect: { top: 130, left: 0, width: VW, height: VH - 130, bottom: VH, right: VW },
+  });
+  const box = new El('div', {
+    hasVideo: true,
+    position: 'fixed',
+    rect: { top: 130, left: 0, width: VW, height: VH - 230, bottom: VH - 100, right: VW },
+  });
+  const video = new El('video', { rect: { top: 300, left: 0, width: VW, height: 220, bottom: 520, right: VW } });
   box.appendChild(video);
+  pageWrapper.appendChild(box);
+  pageWrapper.__videoRef = video;
+  box.__videoRef = video;
+
+  const dock = new El('div', {
+    text: '首页 分类 搜索 我的',
+    rect: { top: VH - 80, left: 0, width: VW, height: 80, bottom: VH, right: VW },
+  });
+
   body.appendChild(header);
-  body.appendChild(box);
+  body.appendChild(pageWrapper);
   body.appendChild(dock);
 
   const registry = { 'hg-immersive-css': null, 'hg-shell-tap-css': null };
@@ -110,11 +137,10 @@ function buildDom() {
     fullscreenElement: null,
   };
   const origAppend = head.appendChild.bind(head);
-  head.appendChild = (child) => { if (child.attrs && child.id) registry[child.id] = child; else if (child.id) registry[child.id] = child; origAppend(child); child.parentNode = head; return child; };
-  return { document, header, dock, box, video, registry };
+  head.appendChild = (child) => { if (child.id) registry[child.id] = child; origAppend(child); child.parentNode = head; return child; };
+  return { document, header, dock, pageWrapper, box, video, registry };
 }
 
-// ---------------- 网络桩 ----------------
 function makeResponse(payload, contentType = 'application/json; charset=utf-8') {
   const clonePayload = () => JSON.parse(JSON.stringify(payload));
   return {
@@ -130,7 +156,7 @@ function makeResponse(payload, contentType = 'application/json; charset=utf-8') 
 function makeSandbox(nextPayload) {
   const dom = buildDom();
   const sandbox = {
-    JSON, Math, Promise, Object, Array, String, Number, Boolean, RegExp, Error, isNaN, parseInt,
+    JSON, Math, Promise, Object, Array, String, Number, Boolean, RegExp, Error, isNaN, parseInt, parseFloat,
     console: { log: () => {}, warn: () => {}, error: () => {} },
     setTimeout: (fn) => { try { fn(); } catch (e) {} return 0; },
     setInterval: () => 0,
@@ -145,12 +171,18 @@ function makeSandbox(nextPayload) {
     },
     XMLHttpRequest: function () { this.open = () => {}; this.send = () => {}; },
     MutationObserver: function () { this.observe = () => {}; },
+    getComputedStyle: (el) => ({
+      position: (el && el._position) || 'static',
+      display: 'block',
+      visibility: 'visible',
+      opacity: '1',
+    }),
     document: dom.document,
-    innerWidth: 390,
-    innerHeight: 844,
+    innerWidth: VW,
+    innerHeight: VH,
     location: { host: 'hgxml.00api-agy5u.com', pathname: '/', href: 'https://hgxml.00api-agy5u.com/' },
     navigator: { userAgent: 'node-test' },
-    addEventListener: (type, fn) => { (winListeners[type] = winListeners[type] || []).push(fn); },
+    addEventListener: () => {},
     removeEventListener: () => {},
   };
   sandbox.window = sandbox;
@@ -178,7 +210,7 @@ function check(name, ok, detail) {
 }
 
 async function run() {
-  // ---------- 广告：混合 payload ----------
+  // ---------- 广告 ----------
   const payload = {
     icons: Array.from({ length: 10 }, (_, i) => ({ icon: `a${i}.png`, url: `https://ad${i}.example.com/app` })),
     nav: Array.from({ length: 5 }, (_, i) => ({ logo: `n${i}.png`, jump_url: `https://promo${i}.example.net/x` })),
@@ -186,63 +218,66 @@ async function run() {
     data: { list: Array.from({ length: 6 }, (_, i) => ({ id: i, title: `剧${i}`, cover: `https://hgxml.00api-agy5u.com/c${i}.jpg` })) },
   };
   const { sandbox } = makeSandbox(payload);
-  const res = await sandbox.fetch('https://hgxml.00api-agy5u.com/api/app/home', {});
-  const out = JSON.parse(res.body);
+  const out = JSON.parse((await sandbox.fetch('https://hgxml.00api-agy5u.com/api/app/home', {})).body);
   check('icons 被整体清空', out.icons.length === 0, `icons=${out.icons.length}`);
   check('banners 被整体清空', out.banners.length === 0, `banners=${out.banners.length}`);
   check('nav（外链推广数组）被清空', out.nav.length === 0, `nav=${out.nav.length}`);
   check('合法剧目列表保持不变', out.data.list.length === 6, `list=${out.data.list.length}`);
 
   const safePayload = { nav: Array.from({ length: 5 }, (_, i) => ({ logo: `n${i}.png`, url: `https://hgxml.00api-agy5u.com/app/x/${i}` })) };
-  const { sandbox: sandbox2 } = makeSandbox(safePayload);
-  const res2 = await sandbox2.fetch('https://hgxml.00api-agy5u.com/api/app/home', {});
-  check('内链 nav 不被误清', JSON.parse(res2.body).nav.length === 5, `nav=${JSON.parse(res2.body).nav.length}`);
+  const { sandbox: sandboxSafe } = makeSandbox(safePayload);
+  const outSafe = JSON.parse((await sandboxSafe.fetch('https://hgxml.00api-agy5u.com/api/app/home', {})).body);
+  check('内链 nav 不被误清', outSafe.nav.length === 5, `nav=${outSafe.nav.length}`);
 
-  // ---------- seek 续播 ----------
+  // ---------- seek ----------
   check('注册 seek 相关监听', ['pause', 'seeking', 'seeked', 'waiting'].every((t) => (docListeners[t] || []).length > 0));
+  const videoA = makeVideo();
+  fire('pause', videoA);
+  videoA.paused = true;
+  fire('seeking', videoA);
+  fire('seeked', videoA);
+  check('seek 后自动续播', videoA.paused === false && videoA.playCalls > 0, `playCalls=${videoA.playCalls}`);
 
-  const video = makeVideo();
-  fire('pause', video);
-  video.paused = true;
-  fire('seeking', video);
-  fire('seeked', video);
-  check('seek 后自动续播', video.paused === false && video.playCalls > 0, `playCalls=${video.playCalls}`);
-
-  const video2 = makeVideo();
-  fire('pause', video2);
-  video2.paused = true;
+  const videoB = makeVideo();
+  fire('pause', videoB);
+  videoB.paused = true;
   fakeNow += 5000;
-  fire('seeking', video2);
-  fire('seeked', video2);
-  check('用户主动暂停不被误恢复', video2.paused === true && video2.playCalls === 0, `playCalls=${video2.playCalls}`);
+  fire('seeking', videoB);
+  fire('seeked', videoB);
+  check('用户主动暂停不被误恢复', videoB.paused === true && videoB.playCalls === 0, `playCalls=${videoB.playCalls}`);
 
-  // ---------- 播放页：隐藏导航 + 沉浸式 + 居中 ----------
-  const { sandbox: s3, dom } = makeSandbox({});
-  check('暴露播放页 API', typeof s3.HGApp.setPlayerMode === 'function'
-    && typeof s3.HGApp.setImmersive === 'function'
-    && typeof s3.HGApp.centerVideo === 'function', 'setPlayerMode/setImmersive/centerVideo');
+  // ---------- 播放页：隐藏导航（含黑屏回归防护） ----------
+  const { sandbox: s, dom } = makeSandbox({});
+  check('暴露播放页 API', typeof s.HGApp.setPlayerMode === 'function'
+    && typeof s.HGApp.setImmersive === 'function'
+    && typeof s.HGApp.centerVideo === 'function', 'setPlayerMode/setImmersive/centerVideo');
 
-  s3.HGApp.setPlayerMode(true);
-  check('顶栏（logo+搜索）被隐藏', dom.header._classes.has('hg-immersive-hidden'), dom.header._classes.toString());
-  check('底部 4 tab 被隐藏', dom.dock._classes.has('hg-immersive-hidden'), dom.dock._classes.toString());
-  check('注入沉浸式样式表', dom.registry['hg-immersive-css'] !== null, 'hg-immersive-css');
+  s.HGApp.setPlayerMode(true);
+  check('顶栏（logo+搜索）被隐藏', dom.header._classes.has('hg-immersive-hidden'));
+  check('底部 4 tab 被隐藏', dom.dock._classes.has('hg-immersive-hidden'));
+  check('★含 video 的外层容器未被隐藏（黑屏回归防护）', !dom.pageWrapper._classes.has('hg-immersive-hidden'),
+    '隐藏类: ' + (dom.pageWrapper._classes.has('hg-immersive-hidden') ? '有' : '无'));
+  check('★隐藏导航后未触发回滚', s.HGApp.__lastRollback === undefined, String(s.HGApp.__lastRollback || '无回滚'));
+  check('注入沉浸式样式表', dom.registry['hg-immersive-css'] !== null);
 
-  s3.HGApp.setImmersive(true);
+  // ---------- 沉浸式 ----------
+  s.HGApp.setImmersive(true);
   check('横屏沉浸式：html 标记', dom.document.documentElement._classes.has('hg-immersive'));
-  check('横屏沉浸式：播放器盒铺满', dom.box._classes.has('hg-player-box'), dom.box._classes.toString());
-  check('横屏沉浸式：视频铺满（清晰度）', dom.video._classes.has('hg-fill-video'), dom.video._classes.toString());
+  check('★fixed 播放层不被强改定位撑高（黑屏回归防护）', !dom.box._classes.has('hg-player-box'),
+    'hg-player-box: ' + (dom.box._classes.has('hg-player-box') ? '有' : '无'));
+  check('横屏沉浸式：视频铺满（清晰度）', dom.video._classes.has('hg-fill-video'));
+  check('沉浸式未触发回滚', s.HGApp.__lastRollback === undefined, String(s.HGApp.__lastRollback || '无回滚'));
 
-  const centerResult = s3.HGApp.centerVideo();
-  check('居中计算返回偏移', String(centerResult).indexOf('dy=') === 0, String(centerResult));
-  check('居中写回 transform', String(dom.video.style.transform || '').indexOf('translateY') >= 0, String(dom.video.style.transform));
+  const centerResult = s.HGApp.centerVideo();
+  const dy = /dy=(-?\d+)/.exec(String(centerResult));
+  check('居中返回偏移', !!dy, String(centerResult));
+  check('居中幅度不超过视口 25%', !dy || Math.abs(parseInt(dy[1], 10)) <= VH * 0.25, String(centerResult));
 
-  s3.HGApp.setImmersive(false);
-  check('退出沉浸式：还原播放器盒', !dom.box._classes.has('hg-player-box'));
+  s.HGApp.setImmersive(false);
   check('退出沉浸式：取消视频铺满类', !dom.video._classes.has('hg-fill-video'));
-  check('退出沉浸式：竖屏仍做居中（有限值，非 NaN）',
-    !/NaN/.test(String(dom.video.style.transform || '')), String(dom.video.style.transform));
+  check('退出沉浸式：竖屏仍做居中且非 NaN', !/NaN/.test(String(dom.video.style.transform || '')), String(dom.video.style.transform));
 
-  s3.HGApp.setPlayerMode(false);
+  s.HGApp.setPlayerMode(false);
   check('退出播放页：导航恢复', !dom.header._classes.has('hg-immersive-hidden') && !dom.dock._classes.has('hg-immersive-hidden'));
   check('退出播放页：视频内联样式被还原', !String(dom.video.style.transform || '').trim(), JSON.stringify(String(dom.video.style.transform || '')));
 

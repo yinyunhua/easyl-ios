@@ -537,9 +537,9 @@ enum BridgeScripts {
                 var s=document.createElement('style');
                 s.id='hg-immersive-css';
                 s.textContent=
-                  'html.hg-immersive,html.hg-immersive body{background:#000!important;overflow:hidden!important;height:100%!important}'+
+                  'html.hg-immersive,html.hg-immersive body{background:#000!important;overflow:hidden!important}'+
                   '.hg-immersive-hidden{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;height:0!important;overflow:hidden!important}'+
-                  '.hg-player-box{height:100vh!important;max-height:100vh!important;margin:0!important;padding:0!important;background:#000!important;position:relative!important;top:0!important}'+
+                  '.hg-player-box{height:100vh!important;max-height:100vh!important;margin:0!important;padding:0!important;background:#000!important}'+
                   '.hg-fill-video{width:100%!important;max-width:100%!important;height:auto!important;max-height:100%!important;object-fit:contain!important;margin:0 auto!important}';
                 (document.head||document.documentElement).appendChild(s);
               }catch(e){}
@@ -561,6 +561,33 @@ enum BridgeScripts {
                 return best;
               }catch(e){return null;}
             }
+            function containsVideo(el){
+              try{
+                if(!el||!el.querySelector){return false;}
+                if(el.tagName==='VIDEO'){return true;}
+                if(el.querySelector('video')){return true;}
+                var t=(el.className&&typeof el.className==='string')?el.className:'';
+                var id=el.id||'';
+                if(/player|video|hg-video/i.test(t+' '+id)&&el.querySelector&&el.querySelector('video')){return true;}
+                return false;
+              }catch(e){return false;}
+            }
+            function videoVisible(){
+              try{
+                var v=biggestVideo();
+                if(!v){return true;}
+                var r=v.getBoundingClientRect();
+                if(!r.width||!r.height){return false;}
+                var cs=window.getComputedStyle?window.getComputedStyle(v):null;
+                if(cs){
+                  if(cs.display==='none'||cs.visibility==='hidden'){return false;}
+                  if(parseFloat(cs.opacity||'1')===0){return false;}
+                }
+                var doc=document.documentElement;
+                if(doc&&doc.classList&&doc.classList.contains('hg-immersive')&&r.bottom<0){return false;}
+                return true;
+              }catch(e){return true;}
+            }
             function playerBox(v){
               try{
                 var node=v, best=null, guard=0;
@@ -573,31 +600,44 @@ enum BridgeScripts {
                 return best||(v?v.parentNode:null);
               }catch(e){return null;}
             }
+            function textOf(el){
+              try{
+                var t=(el.innerText||el.textContent||'');
+                return t.length>400?'':t;
+              }catch(e){return '';}
+            }
             function isBottomDock(el,vh){
+              // 只认「矮、宽、贴底、含 ≥3 个主 tab 关键词、且不含 video」的节点，避免误伤整页容器
               try{
                 if(!el||!el.getBoundingClientRect){return false;}
+                if(el===document.body||el===document.documentElement){return false;}
+                if(containsVideo(el)){return false;}
                 var r=el.getBoundingClientRect();
                 if(r.height<=0||r.width<=0){return false;}
-                if(r.bottom<vh-160){return false;}
-                var t=(el.innerText||el.textContent||'');
-                if(t.length>400){return false;}
+                if(r.height>vh*0.22){return false;}
+                if(r.width<window.innerWidth*0.7){return false;}
+                if(r.bottom<vh*0.75){return false;}
+                var t=textOf(el);
+                if(!t){return false;}
                 var keys=['首页','分类','搜索','我的','发现','会员','追剧'];
                 var hits=0;
                 for(var i=0;i<keys.length;i++){ if(t.indexOf(keys[i])>=0){hits++;} }
                 return hits>=3;
               }catch(e){return false;}
             }
-            function isTopHeader(el){
+            function isTopHeader(el,vh){
+              // 只认「矮、贴顶、含搜索框/搜索字样、且不含 video」的节点
               try{
                 if(!el||!el.getBoundingClientRect){return false;}
+                if(el===document.body||el===document.documentElement){return false;}
+                if(containsVideo(el)){return false;}
                 var r=el.getBoundingClientRect();
                 if(r.height<=0||r.width<=0){return false;}
-                if(r.top>150){return false;}
-                if(r.height>320){return false;}
+                if(r.height>vh*0.20){return false;}
+                if(r.top>vh*0.16){return false;}
                 if(el.querySelector&&el.querySelector('input[type=search],input[type=text],input:not([type])')){return true;}
-                var t=(el.innerText||el.textContent||'');
-                if(t.length>200){return false;}
-                return /搜索/.test(t);
+                var t=textOf(el);
+                return !!t&&/搜索|搜/.test(t);
               }catch(e){return false;}
             }
             function walkBounded(root,cb,budget,depth){
@@ -626,7 +666,7 @@ enum BridgeScripts {
                 }
                 var found=[];
                 walkBounded(document.body,function(el){
-                  if(isBottomDock(el,vh)||isTopHeader(el)){
+                  if(isBottomDock(el,vh)||isTopHeader(el,vh)){
                     if(found.indexOf(el)<0){found.push(el);}
                   }
                 },{n:700},1);
@@ -636,6 +676,15 @@ enum BridgeScripts {
                     target.classList.add('hg-immersive-hidden');
                     hiddenNodes.push(target);
                   }
+                }
+                // 安全网：隐藏导航后如果视频看不见了，立刻整体回滚，宁可留着导航也不能黑屏
+                if(found.length&&!videoVisible()){
+                  for(var k=0;k<hiddenNodes.length;k++){
+                    var back=hiddenNodes[k];
+                    if(back&&back.classList){ back.classList.remove('hg-immersive-hidden'); }
+                  }
+                  hiddenNodes=[];
+                  try{ window.HGApp.__lastRollback='chrome-hidden-video'; }catch(e){}
                 }
               }catch(e){}
             }
@@ -653,16 +702,29 @@ enum BridgeScripts {
                 var box=playerBox(v)||v.parentNode;
                 if(!box){return 'nobox';}
                 var vr=v.getBoundingClientRect(), br=box.getBoundingClientRect();
-                var targetY=immActive?(br.top+br.height/2):(window.innerHeight/2);
+                var vh=window.innerHeight||0;
+                var targetY=immActive?(br.top+br.height/2):(vh/2);
                 var dy=targetY-(vr.top+vr.height/2);
+                if(!isFinite(dy)){dy=0;}
+                // 幅度上限：最多挪视口高度的 25%，绝不把视频推出可视区
+                var limit=Math.max(0,vh*0.25);
+                if(dy>limit){dy=limit;}
+                if(dy<-limit){dy=-limit;}
                 var slackUp=Math.max(0,vr.top-br.top);
                 var slackDown=Math.max(0,(br.top+br.height)-(vr.top+vr.height));
                 dy=(dy<0)?Math.max(dy,-slackUp):Math.min(dy,slackDown);
-                if(!isFinite(dy)){dy=0;}
                 if(Math.abs(dy)<6){dy=0;}
                 nudgeVideo(v,dy);
+                if(!videoVisible()){ nudgeVideo(v,0); return 'rollback'; }
                 return 'dy='+Math.round(dy);
               }catch(e){return 'err';}
+            }
+            function boxIsFixed(box){
+              try{
+                var cs=window.getComputedStyle?window.getComputedStyle(box):null;
+                var pos=cs?cs.position:'';
+                return pos==='fixed'||pos==='absolute'||pos==='sticky';
+              }catch(e){return false;}
             }
             function applyImmersive(on){
               try{
@@ -671,9 +733,24 @@ enum BridgeScripts {
                 var box=v?playerBox(v):null;
                 if(on){
                   try{document.documentElement.classList.add('hg-immersive');}catch(e){}
-                  markChrome(true);
-                  if(box&&box.classList){ box.classList.add('hg-player-box'); }
+                  // 只在「文档流内」的容器上撑满高度；原本 fixed/absolute 的全屏播放层保持原样，
+                  // 否则会被强改定位而挪出视口（这正是之前黑屏只剩声音的原因）。
+                  if(box&&box.classList&&!boxIsFixed(box)){ box.classList.add('hg-player-box'); }
                   if(v&&v.classList){ v.classList.add('hg-fill-video'); }
+                  markChrome(true);
+                  if(!videoVisible()){
+                    // 回滚：撤掉所有改动，保留可播放画面
+                    try{document.documentElement.classList.remove('hg-immersive');}catch(e){}
+                    if(box&&box.classList){ box.classList.remove('hg-player-box'); }
+                    if(v){
+                      v.classList.remove('hg-fill-video');
+                      if(typeof v.__hgBaseTransform!=='undefined'){ v.style.transform=v.__hgBaseTransform; }
+                    }
+                    markChrome(false);
+                    immActive=false;
+                    try{ window.HGApp.__lastRollback='immersive-hidden-video'; }catch(e){}
+                    return;
+                  }
                 }else{
                   try{document.documentElement.classList.remove('hg-immersive');}catch(e){}
                   var boxes=document.querySelectorAll('.hg-player-box');
@@ -689,6 +766,25 @@ enum BridgeScripts {
                 immActive=on;
               }catch(e){}
             }
+
+            function playerDiag(){
+              try{
+                var vs=document.querySelectorAll('video');
+                var v=biggestVideo();
+                var r=v?v.getBoundingClientRect():null;
+                return JSON.stringify({
+                  videos:vs.length,
+                  visible:videoVisible(),
+                  rect:r?{w:Math.round(r.width),h:Math.round(r.height),top:Math.round(r.top)}:null,
+                  hidden:hiddenNodes.length,
+                  rollback:(window.HGApp&&window.HGApp.__lastRollback)||'',
+                  player:playerActive,
+                  immersive:immActive
+                });
+              }catch(e){ return '{}'; }
+            }
+            window.HGApp.playerDiag=playerDiag;
+
             function fixVideoLayout(){
               try{
                 var v=biggestVideo();
