@@ -54,6 +54,13 @@ MARKERS = [
     b"setPlayerTuning",
     b"__HG_PLAYER_TUNE__",
     b"playerControls",
+    # v2.4（全文档定位速度键 / 选集条隐藏 / 按比例自动横竖屏）
+    b"hg-strip-hidden",
+    b"setStripHidden",
+    b"findSpeedElDoc",
+    b"fullscreenState",
+    b"videoInfo",
+    b"__HG_STRIP_HIDDEN__",
 ]
 
 EXTRA_FILES = [

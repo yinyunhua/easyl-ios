@@ -150,11 +150,11 @@ bash scripts/build_unsigned_ipa.sh  # 产出 HgForIOS-unsigned.ipa
 | 项 | 值 |
 |---|---|
 | 仓库 / 分支 | `github.com/yinyunhua/easyl-ios` → `hgforios` |
-| 成功运行 | run **#19**（#16/#17 连续 success；#15 因多行字符串缩进失败，已修并加本地 lint，macos-14 + Xcode 15.4） |
-| Release（免登录下载） | `https://github.com/yinyunhua/easyl-ios/releases/tag/hgforios-ipa-19` |
-| IPA | `https://github.com/yinyunhua/easyl-ios/releases/download/hgforios-ipa-19/HgForIOS-unsigned.ipa` |
+| 成功运行 | run **#20**（#16/#17 连续 success；#15 因多行字符串缩进失败，已修并加本地 lint，macos-14 + Xcode 15.4） |
+| Release（免登录下载） | `https://github.com/yinyunhua/easyl-ios/releases/tag/hgforios-ipa-20` |
+| IPA | `https://github.com/yinyunhua/easyl-ios/releases/download/hgforios-ipa-20/HgForIOS-unsigned.ipa` |
 | 本地副本 | `hgtv_ios/dist/HgForIOS-unsigned.ipa` |
-| SHA256（run #17） | `F9F495EC7EC2629223A50C6BBD78A6E4F550C886357EB7AB70AB01ED8584C6D5` |
+| SHA256（run #17） | `860E01CBA4D98A8A6A1AB6107703016A0D087CA6259BDC86C0B738CABC23E8C6` |
 | 校验脚本 | `python scripts/verify_ipa.py` → 结构 / Info.plist / arm64 可执行体 / 28 个补丁标记 / 闪屏锚点 全部通过 |
 
 ### run #16 → #17：黑屏回归与防护（重要）
