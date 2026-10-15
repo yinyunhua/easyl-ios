@@ -46,6 +46,14 @@ MARKERS = [
     b"playerDiag",
     b"videoVisible",
     b"containsVideo",
+    # v2.3（竖屏播放器调优：控件常显 / 选集条让位 / 速度键回传）
+    b"hg-controls-pinned",
+    b"hg-speed-shifted",
+    b"hg-strip-bottom",
+    b"layoutPlayer",
+    b"setPlayerTuning",
+    b"__HG_PLAYER_TUNE__",
+    b"playerControls",
 ]
 
 EXTRA_FILES = [
