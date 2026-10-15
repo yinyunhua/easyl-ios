@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "黄果漫剧 Web 去广告 / 解锁",
+  "version": "1.0.0",
+  "description": "在浏览器里对 H5 站点应用与 App 端一致的 VIP 解锁与去广告补丁（纯本地脚本，不上传任何数据）",
+  "minimum_chrome_version": "102",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "*://*.huge1-7wnjsk.com/*",
+    "*://*.huge2-2hxu9.com/*",
+    "*://*.ihgtv-qa7pt2.com/*",
+    "*://*.00api-agy5u.com/*",
+    "*://*.googlexml.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.huge1-7wnjsk.com/*",
+        "*://*.huge2-2hxu9.com/*",
+        "*://*.ihgtv-qa7pt2.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "黄果漫剧补丁"
+  }
+}

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <style>
+    body { width: 260px; margin: 0; padding: 14px 16px; font: 13px/1.6 -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; background: #22242a; color: #eee; }
+    h1 { font-size: 14px; margin: 0 0 10px; color: #e0ae36; }
+    label { display: flex; align-items: center; justify-content: space-between; margin: 8px 0; }
+    input[type=text] { width: 100%; box-sizing: border-box; padding: 6px 8px; border-radius: 6px; border: 1px solid #3a3d45; background: #2a2d34; color: #eee; }
+    .hint { color: #9aa0aa; font-size: 12px; margin-top: 6px; }
+    button { margin-top: 10px; width: 100%; padding: 7px; border: 0; border-radius: 6px; background: #e0ae36; color: #22242a; font-weight: 600; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>黄果漫剧补丁</h1>
+  <label>额外去广告 <input type="checkbox" id="extraAds" /></label>
+  <label>隐藏「选集」条 <input type="checkbox" id="hideStrip" /></label>
+  <label for="bindToken">渠道 bind_token</label>
+  <input type="text" id="bindToken" placeholder="可留空" />
+  <button id="save">保存并刷新当前页</button>
+  <div class="hint">改动即时生效；播放页拖动进度后会自动续播。</div>
+  <script src="popup.js"></script>
+</body>
+</html>

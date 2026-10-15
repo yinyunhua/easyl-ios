@@ -193,8 +193,18 @@ function makeSandbox(nextPayload) {
       this.body = body;
       this.status = (opts && opts.status) || 200;
       this.statusText = (opts && opts.statusText) || 'OK';
-      this.headers = (opts && opts.headers) || {};
+      var rawHeaders = (opts && opts.headers) || {};
+      this.headers = {
+        // 真实 Response.headers 一定有 get()；桩要是丢了它，v2 读 content-type 会拿到空值而静默跳过
+        get: function (name) {
+          var key = String(name).toLowerCase();
+          for (var p in rawHeaders) { if (String(p).toLowerCase() === key) { return rawHeaders[p]; } }
+          return null;
+        },
+      };
       this.json = async () => JSON.parse(body);
+      this.text = async () => String(body);
+      this.clone = () => new Response(body, opts);   // 真实 Response 有 clone，桩也要有（v2 依赖它读取响应体）
     },
     XMLHttpRequest: function () { this.open = () => {}; this.send = () => {}; },
     MutationObserver: function () { this.observe = () => {}; },

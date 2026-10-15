@@ -550,6 +550,7 @@ enum BridgeScripts {
             }
 
             // ==================== 播放器：隐藏导航 / 沉浸式 / 居中 ====================
+            var fsActive=false;   // 系统全屏播放器是否在展示（webkitbegin/endfullscreen 维护）
             var playerActive=false, immActive=false;
             var hiddenNodes=[];
 

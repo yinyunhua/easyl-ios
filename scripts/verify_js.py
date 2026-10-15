@@ -31,8 +31,9 @@ def extract_blocks(text):
             pattern = re.compile(
                 r"static let " + name + r"\s*=\s*##\"\"\"(.*?)\"\"\"##", re.S)
         else:
+            # 兼容两种写法：`return ##"""` 与 Swift 隐式返回的 `##"""`
             pattern = re.compile(
-                r"static func " + name + r"\([^)]*\)[^{]*\{(.*?)return\s*##\"\"\"(.*?)\"\"\"##", re.S)
+                r"static func " + name + r"\([^)]*\)[^{]*\{(.*?)(?:return\s+)?##\"\"\"(.*?)\"\"\"##", re.S)
         match = pattern.search(text)
         if not match:
             print(f"[MISS] {name} 未在 BridgeScripts.swift 中找到")
@@ -46,7 +47,7 @@ def extract_blocks(text):
         body = body.replace(r"\##(backup)", "https://rules.googlexml.com/api")
         body = body.replace(r"\##(sanitize(apiBase))", "https://hgxml.00api-agy5u.com/api")
         body = body.replace(r"\##(sanitize(promoAgentId))", "")
-        body = re.sub(r"\\##\([^)]*\)", "PLACEHOLDER", body)
+        body = re.sub(r"\\##\([^)]*\)", "''", body)   # 兜底：未知插值给空串，避免残留未声明标识符
         found[name] = (out, body)
     return found
 
@@ -74,6 +75,18 @@ def main():
             if proc.returncode != 0:
                 problems += 1
                 print(proc.stderr.strip()[:1500])
+                continue
+
+            # 语法通过后，再在 'use strict' 下整体求值一次并触发常见事件：
+            # 未声明标识符（例如漏声明的 fsActive）会在这步暴露，普通模式会静默创建全局。
+            smoke = os.path.join(ROOT, "scripts", "smoke_strict_load.js")
+            if os.path.exists(smoke):
+                proc2 = subprocess.run([node, smoke, path], capture_output=True, text=True)
+                label = "STRICT-OK" if proc2.returncode == 0 else "STRICT-FAIL"
+                print(f"    [{label}] {name}")
+                if proc2.returncode != 0:
+                    problems += 1
+                    print((proc2.stderr or proc2.stdout).strip()[:1200])
 
     print("\n校验完成：%d 段，问题 %d 个" % (len(blocks), problems))
     return 1 if problems else 0
