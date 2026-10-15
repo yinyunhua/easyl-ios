@@ -132,12 +132,7 @@ struct RootView: View {
     /// 全屏键：优先贴在 H5 速度键右侧（同一行），拿不到坐标时退回右上角。
     private var playerFullscreenButton: some View {
         GeometryReader { geo in
-            let size = geo.size
-            let frame = model.playerControlsFrame
-            let side: CGFloat = 30
-            let x = frame.map { min(size.width - side / 2 - 6, max(side / 2 + 6, $0.maxX + 22)) }
-                ?? (size.width - 26)
-            let y = frame.map { min(size.height - side / 2 - 6, max(side / 2 + 6, $0.midY)) } ?? 46
+            let point = playerButtonPoint(in: geo.size)
 
             Button {
                 model.togglePlayerFullscreen()
@@ -147,15 +142,32 @@ struct RootView: View {
                       : "arrow.up.left.and.arrow.down.right")
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(.white)
-                    .frame(width: side, height: side)
+                    .frame(width: Self.playerButtonSide, height: Self.playerButtonSide)
                     .background(Color.black.opacity(0.35))
                     .clipShape(Circle())
                     .overlay(Circle().stroke(Color.white.opacity(0.18), lineWidth: 0.5))
             }
             .opacity(0.62)
-            .position(x: x, y: y)
+            .position(x: point.x, y: point.y)
             .accessibilityLabel(model.isLandscapeForced ? "退出全屏" : "全屏播放")
         }
+    }
+
+    private static let playerButtonSide: CGFloat = 30
+
+    /// 坐标计算单独成函数：直接写在 ViewBuilder 里会让类型检查器超时（真机 CI 实测报错）。
+    private func playerButtonPoint(in size: CGSize) -> CGPoint {
+        let half = Self.playerButtonSide / 2
+        let margin: CGFloat = 6
+        let gap: CGFloat = 22
+        guard let frame = model.playerControlsFrame else {
+            return CGPoint(x: size.width - 26, y: 46)
+        }
+        let rawX = frame.maxX + gap
+        let rawY = frame.midY
+        let x = min(size.width - half - margin, max(half + margin, rawX))
+        let y = min(size.height - half - margin, max(half + margin, rawY))
+        return CGPoint(x: x, y: y)
     }
 
     private func showToast(_ text: String) {
