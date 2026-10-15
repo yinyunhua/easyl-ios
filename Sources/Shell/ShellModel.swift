@@ -280,34 +280,59 @@ final class ShellModel: ObservableObject {
             path = trimmed
         }
         let play = Self.isPlayPath(path)
+        let wasPlayer = isPlayerPage
         isPlayerPage = play
         pullRefreshEnabled = !play
+        if play != wasPlayer {
+            setPlayerModeJS(play)
+        }
         // 离开播放页时自动恢复竖屏，避免误锁横屏
         if !play, isLandscapeForced {
             exitPlayerFullscreen()
         }
     }
 
+    // MARK: - 播放页增强（隐藏 H5 导航 / 沉浸式铺满 / 视频居中）
+
+    private func setPlayerModeJS(_ on: Bool) {
+        let js = "try{window.HGApp&&window.HGApp.setPlayerMode&&window.HGApp.setPlayerMode(\(on ? "true" : "false"));}catch(e){}"
+        webView?.evaluateJavaScript(js, completionHandler: nil)
+    }
+
+    private func setImmersiveJS(_ on: Bool) {
+        let js = "try{window.HGApp&&window.HGApp.setImmersive&&window.HGApp.setImmersive(\(on ? "true" : "false"));}catch(e){}"
+        webView?.evaluateJavaScript(js, completionHandler: nil)
+    }
+
+    private func centerVideoJS() {
+        webView?.evaluateJavaScript("try{window.HGApp&&window.HGApp.centerVideo&&window.HGApp.centerVideo();}catch(e){}", completionHandler: nil)
+    }
+
     // MARK: - 播放页横屏 / 全屏（iOS 无 orientation.lock，由外壳提供）
 
-    /// 进播放态：锁横屏 + 优先进原生全屏播放，再通知 H5 重新排版。
+    /// 进播放态：隐藏 H5 导航 + 锁横屏 + 沉浸式铺满 + 优先进原生全屏播放。
     func enterPlayerFullscreen() {
         AppOrientation.shared.lockLandscape()
         isLandscapeForced = true
+        setImmersiveJS(true)
         webView?.evaluateJavaScript(BridgeScripts.enterNativeFullscreenJS) { result, _ in
             if let text = result as? String, text != "native", text != "std" {
-                HGLog.w("Orientation", "no fullscreen-capable video element (result=\(text))；仅锁定横屏")
+                HGLog.w("Orientation", "no fullscreen-capable video element (result=\(text))；退化为横屏铺满")
             }
         }
         scheduleResizeDispatch()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in self?.centerVideoJS() }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in self?.centerVideoJS() }
     }
 
-    /// 退出播放态：退出全屏 + 恢复竖屏。
+    /// 退出播放态：退出全屏 + 取消沉浸式 + 恢复竖屏。
     func exitPlayerFullscreen() {
         AppOrientation.shared.lockPortrait()
         isLandscapeForced = false
+        setImmersiveJS(false)
         webView?.evaluateJavaScript(BridgeScripts.exitNativeFullscreenJS, completionHandler: nil)
         scheduleResizeDispatch()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in self?.centerVideoJS() }
     }
 
     func togglePlayerFullscreen() {
@@ -540,21 +565,29 @@ final class ShellModel: ObservableObject {
         let cache = BridgeScripts.bridgeCacheJS(apiBase: runtimeAPIBase, promoAgentId: "")
         let promo = BridgeScripts.promoTokenJS(PromoBindStore.token())
         let extra = BridgeScripts.extraAdsFlagJS(AppConfig.extraAdsEnabled)
+        let playerFlag = BridgeScripts.playerExtraFlagJS(AppConfig.playerExtraEnabled)
         let v2 = BridgeScripts.iosPatchJS(ownHosts: BridgeScripts.staticOwnHosts(includeDebugSeeds: SeedCatalog.usesDebugSeeds)
             + trustedHosts)
         webView.evaluateJavaScript(bridge, completionHandler: nil)
-        webView.evaluateJavaScript(cache + promo + extra, completionHandler: nil)
+        webView.evaluateJavaScript(cache + promo + extra + playerFlag, completionHandler: nil)
         webView.evaluateJavaScript(BridgeScripts.patchJS, completionHandler: nil)
         webView.evaluateJavaScript(v2, completionHandler: nil)
         webView.evaluateJavaScript("try{window.HGApp&&window.HGApp.sweepAds&&window.HGApp.sweepAds();}catch(e){}", completionHandler: nil)
+        setPlayerModeJS(isPlayerPage)
     }
 
-    /// 设置页切换「额外去广告」后实时生效（无需重装）。
+    /// 设置页切换「额外去广告」/「播放页沉浸式」后实时生效（无需重装）。
     func applyExtraAdsSetting() {
         guard let webView else { return }
         let js = BridgeScripts.extraAdsFlagJS(AppConfig.extraAdsEnabled)
+            + BridgeScripts.playerExtraFlagJS(AppConfig.playerExtraEnabled)
             + "try{window.HGApp&&window.HGApp.sweepAds&&window.HGApp.sweepAds();}catch(e){}"
         webView.evaluateJavaScript(js, completionHandler: nil)
+        setPlayerModeJS(isPlayerPage)
+        if isPlayerPage {
+            setImmersiveJS(isLandscapeForced)
+            centerVideoJS()
+        }
     }
 
     /// 让原生侧主动刷新一次桥接缓存（促销 token 变化时）。

@@ -86,6 +86,23 @@ struct RootView: View {
         VStack {
             HStack(spacing: 10) {
                 Spacer()
+                // 播放页专属：右上角横屏/全屏键（H5 在 iOS 上拿不到 orientation.lock）。
+                // 放在右上角是刻意的——右下角会压住播放器的时间/倍速显示，左上角会压住剧集标签。
+                if model.isPlayerPage {
+                    Button {
+                        model.togglePlayerFullscreen()
+                    } label: {
+                        Image(systemName: model.isLandscapeForced ? "arrow.down.right.and.arrow.up.left" : "arrow.up.left.and.arrow.down.right")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.white)
+                            .frame(width: 34, height: 34)
+                            .background(Color.black.opacity(0.40))
+                            .clipShape(Circle())
+                            .overlay(Circle().stroke(Color.white.opacity(0.16), lineWidth: 0.5))
+                    }
+                    .opacity(0.55)
+                    .accessibilityLabel(model.isLandscapeForced ? "退出横屏" : "横屏播放")
+                }
                 if AppConfig.isDebugBuild {
                     Button {
                         model.showSettings = true
@@ -104,27 +121,6 @@ struct RootView: View {
             .padding(.top, 6)
 
             Spacer()
-
-            // 播放页专属：右侧中部的横屏/全屏键（H5 在 iOS 上拿不到 orientation.lock，必须由外壳提供）
-            if model.isPlayerPage {
-                HStack {
-                    Spacer()
-                    Button {
-                        model.togglePlayerFullscreen()
-                    } label: {
-                        Image(systemName: model.isLandscapeForced ? "arrow.down.right.and.arrow.up.left" : "arrow.up.left.and.arrow.down.right")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(.white)
-                            .frame(width: 40, height: 40)
-                            .background(Color.black.opacity(0.42))
-                            .clipShape(Circle())
-                            .overlay(Circle().stroke(Color.white.opacity(0.18), lineWidth: 0.5))
-                    }
-                    .opacity(0.72)
-                    .padding(.trailing, 6)
-                    .accessibilityLabel(model.isLandscapeForced ? "退出横屏" : "横屏播放")
-                }
-            }
 
             HStack {
                 Spacer()

@@ -95,6 +95,7 @@ enum AppConfig {
     /// 额外去广告（首页外链图标栅格 / 广告字段）开关，默认开启。
     enum StoreKey {
         static let extraAds = "hg.patch.extraAds"
+        static let playerExtra = "hg.patch.playerExtra"
     }
 
     static var extraAdsEnabled: Bool {
@@ -104,6 +105,16 @@ enum AppConfig {
 
     static func setExtraAdsEnabled(_ enabled: Bool) {
         UserDefaults.standard.set(enabled, forKey: StoreKey.extraAds)
+    }
+
+    /// 播放页增强：隐藏 H5 顶栏（logo/搜索）与底部导航、横屏沉浸式铺满、视频居中。默认开启。
+    static var playerExtraEnabled: Bool {
+        if UserDefaults.standard.object(forKey: StoreKey.playerExtra) == nil { return true }
+        return UserDefaults.standard.bool(forKey: StoreKey.playerExtra)
+    }
+
+    static func setPlayerExtraEnabled(_ enabled: Bool) {
+        UserDefaults.standard.set(enabled, forKey: StoreKey.playerExtra)
     }
 
     /// Debug 构建才启用 debug 种子（对应 BuildConfig.DEBUG）。Release 下用户可在设置页手动覆盖。

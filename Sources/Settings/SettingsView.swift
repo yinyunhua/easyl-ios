@@ -83,11 +83,19 @@ struct SettingsView: View {
                             showToast(newValue ? "已开启额外去广告" : "已关闭额外去广告")
                         }
                     ))
-                    Button("立即清扫一次（DOM + 字段）") {
+                    Toggle("播放页沉浸式（隐藏 H5 顶栏/搜索/底部导航，横屏铺满，视频居中）", isOn: Binding(
+                        get: { AppConfig.playerExtraEnabled },
+                        set: { newValue in
+                            AppConfig.setPlayerExtraEnabled(newValue)
+                            model.applyExtraAdsSetting()
+                            showToast(newValue ? "已开启播放页沉浸式" : "已关闭播放页沉浸式")
+                        }
+                    ))
+                    Button("立即清扫 + 重排播放器") {
                         model.applyExtraAdsSetting()
-                        showToast("已执行清扫")
+                        showToast("已执行")
                     }
-                    Text("播放页拖动进度条后自动续播、H5 优先返回键均由 iOS 增强补丁 v2 提供（__HG_PATCH_V2__）。")
+                    Text("播放页会自动隐藏 H5 的顶栏（logo/搜索）与底部四个导航，视频按屏幕中央对齐；横屏时铺满视口并把 video 拉到满宽以提升清晰度。seek 后自动续播、H5 优先返回键也在这一层。")
                         .font(.footnote)
                         .foregroundColor(.secondary)
                 }
