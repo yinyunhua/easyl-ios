@@ -57,7 +57,7 @@ final class UpdateService {
     func fetchUpdateInfoAsync(apiBase: String) async -> UpdateInfo? {
         await withCheckedContinuation { cont in
             DispatchQueue.global(qos: .utility).async {
-                cont.resume(returning: self.fetchUpdateInfo(apiBase: apiBase))
+                cont.resume(returning: try? self.fetchUpdateInfo(apiBase: apiBase))
             }
         }
     }

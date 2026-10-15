@@ -123,6 +123,10 @@ jobs:
           mkdir -p _ci
           {
             echo "run=${GITHUB_RUN_NUMBER} sha=${GITHUB_SHA} branch=${GITHUB_REF_NAME} time=$(date -u +%FT%TZ)"
+            echo "===== ERRORS ONLY (grep -n 'error:') ====="
+            grep -n "error:" xcodebuild.log 2>/dev/null | head -60
+            echo "===== WARNINGS ONLY (grep -n 'warning:') ====="
+            grep -n "warning:" xcodebuild.log 2>/dev/null | head -40
             echo "===== xcodebuild.log (tail -400) ====="
             tail -400 xcodebuild.log 2>/dev/null
             echo "===== xcodegen.log (tail -40) ====="

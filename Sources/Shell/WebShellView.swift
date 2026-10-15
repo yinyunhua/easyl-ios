@@ -135,14 +135,15 @@ struct WebShellView: UIViewRepresentable {
 
         func attach(_ webView: WKWebView) {
             self.webView = webView
-            // KVO 闭包不在主 actor 上，因此只读 change.newValue（纯值），再跳主线程处理
+            // KVO 闭包不在主 actor 上，因此只读 change.newValue（纯值），
+            // 并把 model 提成强引用局部量，再跳主线程处理（避免在并发闭包里引用捕获的 weak self）。
             progressObservation = webView.observe(\.estimatedProgress, options: [.new]) { [weak self] _, change in
-                guard let value = change.newValue else { return }
-                Task { @MainActor in self?.model.onPageProgress(value) }
+                guard let value = change.newValue, let model = self?.model else { return }
+                Task { @MainActor in model.onPageProgress(value) }
             }
             canGoBackObservation = webView.observe(\.canGoBack, options: [.new]) { [weak self] _, change in
-                guard let value = change.newValue else { return }
-                Task { @MainActor in self?.model.onNavigationUpdate(canGoBack: value) }
+                guard let value = change.newValue, let model = self?.model else { return }
+                Task { @MainActor in model.onNavigationUpdate(canGoBack: value) }
             }
         }
 

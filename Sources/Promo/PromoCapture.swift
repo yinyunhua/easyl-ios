@@ -146,7 +146,7 @@ enum PromoCapture {
         }
         var candidates: [String] = []
         if let text = pasteboard.string, !text.isEmpty { candidates.append(text) }
-        if let url = pasteboard.URL?.absoluteString, !url.isEmpty { candidates.append(url) }
+        if let url = pasteboard.url?.absoluteString, !url.isEmpty { candidates.append(url) }
         candidates.append(contentsOf: pasteboard.strings ?? [])
         if candidates.isEmpty {
             HGLog.d("PromoBindCapture", "pasteboard scan denied or empty")
