@@ -70,10 +70,13 @@ hgtv_ios/
 
 | 校验 | 命令 | 结果 |
 |---|---|---|
-| 注入 JS 语法 | `python scripts/verify_js.py`（node --check） | `bridgeJS` / `patchJS` / `handleBackJS` 三段全部 OK |
+| 注入 JS 语法 | `python scripts/verify_js.py`（node --check） | 5 段（bridge / v1 补丁 / v2 补丁 / handleBack / 开关）全部 OK |
+| Swift 多行字符串缩进 | `python scripts/lint_swift_rawstrings.py` | 0 问题（run #15 的失败正是这条规则，现已本地拦住） |
+| 补丁行为测试 | `node scripts/test_ios_patch.js` | 22 项全过（广告清空/内链不误清、seek 续播、隐藏导航、沉浸式、居中、退出还原） |
 | VIP 补丁一致性 | `python scripts/diff_against_apk.py` | 与 APK dex 中 `__HG_PATCH_V1__` 原文 **152/152 行完全一致** |
-| Info.plist 结构 | `python -c "import plistlib,..."` | 27 键解析通过，显示名「黄果漫剧」，`CFBundleIconName=AppIcon` |
-| 原始素材 | `python scripts/make_assets.py` | AppIcon 1024×1024（由 mipmap-xxxhdpi 192px 放大）、闪屏 720×1280 |
+| Info.plist 结构 | `python -c "import plistlib,..."` | 键解析通过，显示名「黄果漫剧」，`CFBundleIconName=AppIcon` |
+| 原始素材 | `python scripts/make_assets.py` | AppIcon 1024×1024（由 mipmap-xxxhdpi 192px 放大）、闪屏 720×1280 + 锚点 JSON |
+| 出包内容 | `python scripts/verify_ipa.py` | 结构 / Info.plist / arm64 可执行体 / 25 个补丁标记 / 闪屏锚点 全部通过 |
 | 静态审查 | 独立 reviewer 全量读 20 个 Swift 文件 | 14 项发现，8 项 MUST FIX 已全部落地（见下） |
 
 ### 审查后修正（8 项致命项）
