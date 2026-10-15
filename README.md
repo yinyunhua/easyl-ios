@@ -146,16 +146,34 @@ bash scripts/build_unsigned_ipa.sh  # 产出 HgForIOS-unsigned.ipa
 | 项 | 值 |
 |---|---|
 | 仓库 / 分支 | `github.com/yinyunhua/easyl-ios` → `hgforios` |
-| 成功运行 | run **#13**（`conclusion=success`，macos-14 + Xcode 15.4） |
-| Release（免登录下载） | `https://github.com/yinyunhua/easyl-ios/releases/tag/hgforios-ipa-13` |
-| IPA | `https://github.com/yinyunhua/easyl-ios/releases/download/hgforios-ipa-13/HgForIOS-unsigned.ipa` |
-| 本地副本 | `hgtv_ios/dist/HgForIOS-unsigned.ipa`（2.17 MB） |
-| SHA256 | `A87F13E2FF52E598BAAFB6A945CCA484E983E955A4F461BC81E0FD8EC7623401` |
-| 校验脚本 | `python scripts/verify_ipa.py` → 结构 / Info.plist / arm64 可执行体 / 补丁标记 全部通过 |
+| 成功运行 | run **#14**（首版 run #13，均 `conclusion=success`，macos-14 + Xcode 15.4） |
+| Release（免登录下载） | `https://github.com/yinyunhua/easyl-ios/releases/tag/hgforios-ipa-14` |
+| IPA | `https://github.com/yinyunhua/easyl-ios/releases/download/hgforios-ipa-14/HgForIOS-unsigned.ipa` |
+| 本地副本 | `hgtv_ios/dist/HgForIOS-unsigned.ipa`（2.19 MB） |
+| SHA256（run #14） | `37C9BFB35CCC226B0B18E116A2E17326ADD2701665C13C53D7A16F649969300A` |
+| 校验脚本 | `python scripts/verify_ipa.py` → 结构 / Info.plist / arm64 可执行体 / 补丁标记 / 闪屏锚点 全部通过 |
 
-`verify_ipa.py` 实测输出要点：`CFBundleIdentifier=com.hg.app`、`CFBundleDisplayName=黄果漫剧`、`2.0.5(103)`、`MinimumOSVersion=16.0`、可执行体 `MH_MAGIC_64 / arm64`（884 KB）；二进制内命中 `__HG_PATCH_V1__`、`fakeVip`、`stripAds`、`unlockPlay`、`HuangGuoNative`、`__HG_API_SEED__`、`hg-app-update-result`、`hgtv[_-]([A-Za-z0-9]{16,64})`、API 种子与 H5 种子 —— 即 VIP 解锁与去广告补丁确实已编进 IPA。
+`verify_ipa.py` 实测输出要点：`CFBundleIdentifier=com.hg.app`、`CFBundleDisplayName=黄果漫剧`、`2.0.5(103)`、`MinimumOSVersion=16.0`、可执行体 `MH_MAGIC_64 / arm64`；包内 `splash_anchor.json` = `{contentCenterY: 0.4702, contentCenterX: 0.4778}`；二进制命中 `__HG_PATCH_V1__`、`fakeVip`、`stripAds`、`unlockPlay`、`HuangGuoNative`、`__HG_API_SEED__`、`hg-app-update-result`、`hgtv[_-]([A-Za-z0-9]{16,64})`、`__HG_PATCH_V2__`、`sweepAds`、`fixVideoLayout`、`webkitEnterFullscreen`、`orientationchange`、`requestGeometryUpdate`。
 
 未签名，自签安装：Sideloadly / ESign / AltStore / TrollStore 任选，拖入 IPA 即可。
+
+### 真机反馈的 4 个问题与修法（run #14）
+
+| # | 现象 | 根因 | 修法 |
+|---|---|---|---|
+| 1 | 首页顶部仍有 2×5 共 10 个外链广告图标 | v1 补丁只清 `icons/banners/strip/slots`，且 `isAppApi` 路由白名单过窄；注入发生在 `didStart`，首页首个数据请求可能抢先 | ① 桥接 + v1 + v2 补丁全部改到 `atDocumentStart` 注入（早于页面脚本）；② v2 补丁四层清理：更宽路由（`/api/`、`/app/`、种子域名）→ 流量清洗 → SAFE_KEYS 字段清空 → 「≥4 项且 ≥50% 为外链图标」数组启发式 + DOM 外链图标栅格兜底 |
+| 2 | 左上角 `〈` 与 H5 头部 logo 重合（每页都有） | 悬浮返回键压在 H5 头部区域 | 去掉悬浮按钮，改**屏幕左缘右滑**返回；沿用 Android 语义：先问 `__HG_HANDLE_BACK__`，返回 `handled` 即停手，否则 `goBack` |
+| 3 | 播放页拖进度条后不自动播放 | WebKit 在 seek 时会把 `<video>` 置暂停（Android 无此行为） | v2 补丁加 seek 续播：`pause/seeking/seeked/waiting` 联动，仅当「seek 前 1.5s 内发生过 pause」或「seek 后仍在播放态」才自动 `play()` 重试；用户主动暂停不会被误恢复 |
+| 4 | 启动闪屏 logo 不居中 | 素材是满屏渐变图，logo 簇本身位于 **47.0% 高度 / 47.8% 宽度**，铺满后看起来偏上偏左 | `scripts/make_assets.py` 量测锚点写入 `Resources/splash_anchor.json`；`SplashOverlay` 按锚点平移 + 轻微放大腾余量（平移量夹在余量内，任何屏幕比例都不露边） |
+
+### 播放页横屏 / 全屏（新增，对应“没有横屏选项”）
+
+iOS 不支持 `screen.orientation.lock()`，Android 的「播放页全屏横屏」在 iOS 必须由外壳提供：
+
+- 播放页（`play.php` / `/play`）右侧中部出现**旋转键**：点一下 = 锁横屏 + 对页面上最大的 `<video>` 调 `webkitEnterFullscreen()`（原生全屏播放器，自动横屏）；再点恢复竖屏。
+- 原生实现：`AppOrientation` 用 `UIWindowScene.requestGeometryUpdate(.iOS(interfaceOrientations:))` + `application(_:supportedInterfaceOrientationsFor:)`；离开播放页自动恢复竖屏。
+- H5 亦可主动调用：`HGApp.setOrientation('landscape'|'portrait'|'auto')`、`HGApp.enterFullscreen()`、`HGApp.exitFullscreen()`（并在 `HuangGuoNative.*` 上补了同名方法）。
+- 播放器居中兜底：v2 的 `fixVideoLayout()` 只在 `<video>` **真的溢出视口**或**水平偏心 > 8px** 时才纠正（`max-width/object-fit/margin:auto` + 父容器居中）；每次旋转后派发 `resize` / `orientationchange` 让 H5 重排（否则播放器仍按旧视口居中，看起来偏心）。
 
 首轮 CI（run #11/#12）失败暴露了 3 个真实编译错误，已修并复验：
 

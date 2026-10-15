@@ -2,6 +2,7 @@
 
 用法：python scripts/verify_ipa.py [ipa路径]
 """
+import json
 import os
 import plistlib
 import re
@@ -13,6 +14,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_IPA = os.path.join(ROOT, "dist", "HgForIOS-unsigned.ipa")
 
 MARKERS = [
+    # v1（与 APK dex 原文逐行一致）
     b"__HG_PATCH_V1__",
     b"fakeVip",
     b"stripAds",
@@ -23,6 +25,20 @@ MARKERS = [
     b"hgtv[_-]([A-Za-z0-9]{16,64})",
     b"https://hgxml.00api-agy5u.com/api",
     b"google.huge1-7wnjsk.com",
+    # v2（iOS 增强：广告兜底清理 / seek 续播 / 播放器居中 / 横屏全屏）
+    b"__HG_PATCH_V2__",
+    b"sweepAds",
+    b"fixVideoLayout",
+    b"seeked",
+    b"webkitEnterFullscreen",
+    b"orientationchange",
+    b"__HG_EXTRA_ADS__",
+    b"requestGeometryUpdate",
+]
+
+EXTRA_FILES = [
+    "Payload/HgForIOS.app/splash_anchor.json",
+    "Payload/HgForIOS.app/splash_brand.png",
 ]
 
 
@@ -71,6 +87,13 @@ def main():
         for n in sorted(names):
             if n.startswith("Payload/HgForIOS.app/") and n.count("/") == 2:
                 print(f"  {n.split('/')[-1]:32s} {z.getinfo(n).file_size:>9d}")
+
+        missing_files = [f for f in EXTRA_FILES if f not in names]
+        if missing_files:
+            print("!! 缺少资源:", missing_files)
+            return 1
+        anchor = json.loads(z.read("Payload/HgForIOS.app/splash_anchor.json").decode("utf-8"))
+        print("  闪屏锚点:", anchor)
 
         if exe in names:
             data = z.read(exe)
