@@ -106,8 +106,35 @@ jobs:
           if [ -f xcodebuild.log ]; then
             count=$(grep -c "error:" xcodebuild.log || true)
             echo "::error::xcodebuild error lines: ${count:-0}"
-            grep "error:" xcodebuild.log | head -20 || true
+            # 逐行注解，便于无 token 环境下通过 check-runs API 读取真实编译错误
+            grep -n "error:" xcodebuild.log | head -30 | while IFS= read -r line; do
+              echo "::error file=Sources::$line"
+            done
+            grep -B1 -A2 -n "error:" xcodebuild.log | head -150 | while IFS= read -r line; do
+              echo "::warning file=Sources::ctx $line"
+            done
           fi
+
+      # 把失败日志提交回分支（[skip ci] 防循环），这样无需 token 也能读取完整编译错误
+      - name: Archive failure logs to branch
+        if: failure()
+        run: |
+          set +e
+          mkdir -p _ci
+          {
+            echo "run=${GITHUB_RUN_NUMBER} sha=${GITHUB_SHA} branch=${GITHUB_REF_NAME} time=$(date -u +%FT%TZ)"
+            echo "===== xcodebuild.log (tail -400) ====="
+            tail -400 xcodebuild.log 2>/dev/null
+            echo "===== xcodegen.log (tail -40) ====="
+            tail -40 xcodegen.log 2>/dev/null
+            echo "===== list.log (tail -40) ====="
+            tail -40 list.log 2>/dev/null
+          } > _ci/last-error.log
+          git config user.name "hgforios-ci"
+          git config user.email "ci@localhost"
+          git add -f _ci/last-error.log
+          git commit -m "ci: build #${GITHUB_RUN_NUMBER} error log [skip ci]" || true
+          git push origin "HEAD:${GITHUB_REF_NAME}" || echo "::warning::归档日志推送失败"
 
       - name: Upload logs
         if: always()
