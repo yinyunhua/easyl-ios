@@ -1,0 +1,157 @@
+name: Build unsigned IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, hgforios ]
+
+permissions:
+  contents: write
+
+env:
+  APP_NAME: HgForIOS
+  CI_TRACE: ${{ github.workspace }}/ci-trace.txt
+  XCODEGEN_VERSION: "2.42.0"
+
+jobs:
+  build:
+    name: Build unsigned IPA
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Environment probe
+        run: |
+          set -x
+          sw_vers || true
+          uname -m || true
+          xcode-select -p || true
+          xcodebuild -version || true
+          xcrun --sdk iphoneos --show-sdk-version || true
+
+      - name: Install XcodeGen (pinned, Xcode 15 compatible)
+        run: |
+          set -Euxo pipefail
+          trap 'echo "[install-xcodegen] FAILED at: $BASH_COMMAND" >> "$CI_TRACE"' ERR
+          cd "$RUNNER_TEMP"
+          curl -fsSL -o xcodegen.zip "https://github.com/yonaskolb/XcodeGen/releases/download/${XCODEGEN_VERSION}/xcodegen.zip"
+          unzip -q -o xcodegen.zip -d xcodegen-dist
+          sudo bash xcodegen-dist/xcodegen/install.sh
+          /usr/local/bin/xcodegen --version
+          echo "/usr/local/bin" >> "$GITHUB_PATH"
+
+      - name: Generate and validate project
+        run: |
+          set +e
+          xcodegen generate > xcodegen.log 2>&1
+          code=$?
+          cat xcodegen.log
+          echo "xcodegen exit code: $code"
+
+          if [ ! -d "${APP_NAME}.xcodeproj" ]; then
+            echo "::error::xcodegen produced no project (exit $code)"
+            exit 1
+          fi
+
+          PBX="${APP_NAME}.xcodeproj/project.pbxproj"
+          echo "pbxproj size: $(wc -c < "$PBX") bytes"
+          objver=$(grep -m1 -o 'objectVersion = [0-9]*;' "$PBX" | grep -o '[0-9]*')
+          echo "objectVersion = ${objver:-unknown}"
+          plutil -lint "$PBX" || true
+
+          if [ -n "$objver" ] && [ "$objver" -gt 60 ]; then
+            echo "::error::objectVersion $objver is too new for the Xcode on this runner"
+            exit 1
+          fi
+
+          if ! xcodebuild -list -project "${APP_NAME}.xcodeproj" > list.log 2>&1; then
+            echo "::error::xcodebuild cannot read the generated project"
+            cat list.log
+            exit 1
+          fi
+          cat list.log
+
+      - name: Build app (unsigned)
+        run: |
+          set +e
+          xcodebuild \
+            -project "${APP_NAME}.xcodeproj" \
+            -scheme "${APP_NAME}" \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build > xcodebuild.log 2>&1
+          code=$?
+          echo "$code" > build-exit.txt
+          echo "xcodebuild exit code: $code"
+          tail -80 xcodebuild.log
+          exit "$code"
+
+      - name: Diagnose failures
+        if: failure()
+        run: |
+          echo "::error::failure attribution: xcodegen/project/build failed"
+          [ -f "$CI_TRACE" ] && cat "$CI_TRACE"
+          for f in xcodegen.log xcodebuild.log list.log; do
+            if [ -f "$f" ]; then
+              echo "=== $f (tail -25) ==="; tail -25 "$f"
+            else
+              echo "::error::$f not created"
+            fi
+          done
+          if [ -f xcodebuild.log ]; then
+            count=$(grep -c "error:" xcodebuild.log || true)
+            echo "::error::xcodebuild error lines: ${count:-0}"
+            grep "error:" xcodebuild.log | head -20 || true
+          fi
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: |
+            xcodebuild.log
+            xcodegen.log
+            list.log
+            ci-trace.txt
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Package IPA
+        run: |
+          ls -la build/Build/Products/Release-iphoneos/
+          mkdir -p Payload
+          cp -R "build/Build/Products/Release-iphoneos/${APP_NAME}.app" "Payload/${APP_NAME}.app"
+          zip -qry "${APP_NAME}-unsigned.ipa" Payload
+          ls -lh "${APP_NAME}-unsigned.ipa"
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: HgForIOS-unsigned-ipa
+          path: HgForIOS-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 30
+
+      # 发布为 Release 资产：公开仓库下无需登录即可直接下载 .ipa
+      - name: Publish IPA to Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          TAG="hgforios-ipa-${GITHUB_RUN_NUMBER}"
+          gh release create "$TAG" HgForIOS-unsigned.ipa \
+            --title "HgForIOS 未签名 IPA #${GITHUB_RUN_NUMBER}" \
+            --notes "自动构建产物：$(date -u +%Y-%m-%dT%H:%M:%SZ) / commit ${GITHUB_SHA}" \
+            --prerelease
+          code=$?
+          echo "gh release exit code: $code"
+          if [ "$code" != "0" ]; then
+            echo "::warning::Release 发布失败（可能是仓库默认 Token 权限为只读），请到 Artifacts 手动下载"
+          fi
+          gh release view "$TAG" 2>/dev/null || true

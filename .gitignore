@@ -1,0 +1,15 @@
+# Xcode / 构建产物
+build/
+DerivedData/
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcuserstate
+*.ipa
+Payload/
+HgForIOS.xcodeproj/
+
+# 中间产物
+_analysis/
+__pycache__/
+.DS_Store
+*.log
