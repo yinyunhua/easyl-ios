@@ -1,466 +1,287 @@
-run=15 sha=56733afe8b99c23ac69e64a2bc86faf2631345d8 branch=hgforios time=2026-10-15T03:08:41Z
+run=18 sha=f98a592f64f3d11cdcd3372907387e9193ed589e branch=hgforios time=2026-10-15T06:18:25Z
 ===== ERRORS ONLY (grep -n 'error:') =====
-150:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:352:1: error: insufficient indentation of line in multi-line string literal
-160:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:353:3: error: insufficient indentation of line in multi-line string literal
-170:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:354:5: error: insufficient indentation of next 6 lines in multi-line string literal
-180:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:362:7: error: insufficient indentation of line in multi-line string literal
-190:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:363:5: error: insufficient indentation of next 2 lines in multi-line string literal
-200:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:365:7: error: insufficient indentation of line in multi-line string literal
-210:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:366:5: error: insufficient indentation of next 3 lines in multi-line string literal
-220:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:370:7: error: insufficient indentation of next 4 lines in multi-line string literal
-230:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:377:7: error: insufficient indentation of next 2 lines in multi-line string literal
-240:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:379:5: error: insufficient indentation of next 2 lines in multi-line string literal
-250:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:381:7: error: insufficient indentation of line in multi-line string literal
-260:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:385:7: error: insufficient indentation of line in multi-line string literal
-270:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:386:5: error: insufficient indentation of next 2 lines in multi-line string literal
-280:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:388:7: error: insufficient indentation of next 2 lines in multi-line string literal
-290:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:391:7: error: insufficient indentation of next 3 lines in multi-line string literal
-300:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:394:5: error: insufficient indentation of next 3 lines in multi-line string literal
-310:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:400:5: error: insufficient indentation of next 3 lines in multi-line string literal
-320:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:405:5: error: insufficient indentation of line in multi-line string literal
-330:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:406:7: error: insufficient indentation of next 2 lines in multi-line string literal
-340:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:412:7: error: insufficient indentation of next 2 lines in multi-line string literal
-350:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:414:5: error: insufficient indentation of next 2 lines in multi-line string literal
-360:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:416:7: error: insufficient indentation of line in multi-line string literal
-370:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:421:7: error: insufficient indentation of line in multi-line string literal
-380:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:422:5: error: insufficient indentation of next 2 lines in multi-line string literal
-390:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:424:7: error: insufficient indentation of next 4 lines in multi-line string literal
-400:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:428:5: error: insufficient indentation of next 2 lines in multi-line string literal
-410:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:430:7: error: insufficient indentation of next 3 lines in multi-line string literal
-420:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:433:5: error: insufficient indentation of next 2 lines in multi-line string literal
-430:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:435:7: error: insufficient indentation of line in multi-line string literal
-440:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:465:7: error: insufficient indentation of next 2 lines in multi-line string literal
-450:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:467:5: error: insufficient indentation of next 2 lines in multi-line string literal
-460:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:470:7: error: insufficient indentation of next 7 lines in multi-line string literal
-470:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:477:5: error: insufficient indentation of next 2 lines in multi-line string literal
-480:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:479:7: error: insufficient indentation of next 3 lines in multi-line string literal
-490:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:482:5: error: insufficient indentation of next 2 lines in multi-line string literal
-500:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:484:7: error: insufficient indentation of line in multi-line string literal
-510:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:487:7: error: insufficient indentation of line in multi-line string literal
-520:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:489:7: error: insufficient indentation of line in multi-line string literal
-530:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:490:5: error: insufficient indentation of next 2 lines in multi-line string literal
-540:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:493:7: error: insufficient indentation of next 2 lines in multi-line string literal
-550:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:506:7: error: insufficient indentation of line in multi-line string literal
-560:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:507:5: error: insufficient indentation of next 2 lines in multi-line string literal
-570:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:509:7: error: insufficient indentation of next 4 lines in multi-line string literal
-580:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:530:7: error: insufficient indentation of line in multi-line string literal
-590:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:531:5: error: insufficient indentation of next 3 lines in multi-line string literal
-600:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:535:7: error: insufficient indentation of line in multi-line string literal
-610:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:545:7: error: insufficient indentation of line in multi-line string literal
-620:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:546:5: error: insufficient indentation of next 5 lines in multi-line string literal
-630:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:553:7: error: insufficient indentation of line in multi-line string literal
-640:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:562:7: error: insufficient indentation of line in multi-line string literal
-650:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:563:5: error: insufficient indentation of next 2 lines in multi-line string literal
-660:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:565:7: error: insufficient indentation of line in multi-line string literal
-670:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:574:7: error: insufficient indentation of line in multi-line string literal
-680:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:575:5: error: insufficient indentation of next 2 lines in multi-line string literal
-690:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:577:7: error: insufficient indentation of line in multi-line string literal
-700:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:588:7: error: insufficient indentation of line in multi-line string literal
-710:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:589:5: error: insufficient indentation of next 2 lines in multi-line string literal
-720:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:591:7: error: insufficient indentation of line in multi-line string literal
-730:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:601:7: error: insufficient indentation of line in multi-line string literal
-740:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:602:5: error: insufficient indentation of next 2 lines in multi-line string literal
+146:/Users/runner/work/easyl-ios/easyl-ios/Sources/App/RootView.swift:134:9: error: the compiler is unable to type-check this expression in reasonable time; try breaking up the expression into distinct sub-expressions
+180:        func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+183:        func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+187:    optional func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: any Error)
+200:        func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+203:        func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+207:    optional func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: any Error)
 ===== WARNINGS ONLY (grep -n 'warning:') =====
-1350:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebBridge.swift:40:10: warning: main actor-isolated instance method 'userContentController(_:didReceive:)' cannot be used to satisfy nonisolated protocol requirement
-1360:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:194:14: warning: main actor-isolated instance method 'webView(_:decidePolicyFor:decisionHandler:)' cannot be used to satisfy nonisolated protocol requirement
-1370:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:240:14: warning: main actor-isolated instance method 'webView(_:didStartProvisionalNavigation:)' cannot be used to satisfy nonisolated protocol requirement
-1380:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:255:14: warning: main actor-isolated instance method 'webView(_:didFailProvisionalNavigation:withError:)' cannot be used to satisfy nonisolated protocol requirement
-1390:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:244:14: warning: main actor-isolated instance method 'webView(_:didFinish:)' cannot be used to satisfy nonisolated protocol requirement
-1400:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:249:14: warning: main actor-isolated instance method 'webView(_:didFail:withError:)' cannot be used to satisfy nonisolated protocol requirement
-1410:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:261:14: warning: main actor-isolated instance method 'webViewWebContentProcessDidTerminate' cannot be used to satisfy nonisolated protocol requirement
-1420:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:268:14: warning: main actor-isolated instance method 'webView(_:createWebViewWith:for:windowFeatures:)' cannot be used to satisfy nonisolated protocol requirement
-1430:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:284:14: warning: main actor-isolated instance method 'webView(_:runJavaScriptAlertPanelWithMessage:initiatedByFrame:completionHandler:)' cannot be used to satisfy nonisolated protocol requirement
-1440:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:294:14: warning: main actor-isolated instance method 'webView(_:runJavaScriptConfirmPanelWithMessage:initiatedByFrame:completionHandler:)' cannot be used to satisfy nonisolated protocol requirement
-1450:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:305:14: warning: main actor-isolated instance method 'webView(_:runJavaScriptTextInputPanelWithPrompt:defaultText:initiatedByFrame:completionHandler:)' cannot be used to satisfy nonisolated protocol requirement
+149:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebBridge.swift:41:10: warning: main actor-isolated instance method 'userContentController(_:didReceive:)' cannot be used to satisfy nonisolated protocol requirement
+159:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:196:14: warning: main actor-isolated instance method 'webView(_:decidePolicyFor:decisionHandler:)' cannot be used to satisfy nonisolated protocol requirement
+169:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:242:14: warning: main actor-isolated instance method 'webView(_:didStartProvisionalNavigation:)' cannot be used to satisfy nonisolated protocol requirement
+179:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:257:14: warning: main actor-isolated instance method 'webView(_:didFailProvisionalNavigation:withError:)' cannot be used to satisfy nonisolated protocol requirement
+189:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:246:14: warning: main actor-isolated instance method 'webView(_:didFinish:)' cannot be used to satisfy nonisolated protocol requirement
+199:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:251:14: warning: main actor-isolated instance method 'webView(_:didFail:withError:)' cannot be used to satisfy nonisolated protocol requirement
+209:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:263:14: warning: main actor-isolated instance method 'webViewWebContentProcessDidTerminate' cannot be used to satisfy nonisolated protocol requirement
+219:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:270:14: warning: main actor-isolated instance method 'webView(_:createWebViewWith:for:windowFeatures:)' cannot be used to satisfy nonisolated protocol requirement
+229:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:286:14: warning: main actor-isolated instance method 'webView(_:runJavaScriptAlertPanelWithMessage:initiatedByFrame:completionHandler:)' cannot be used to satisfy nonisolated protocol requirement
+239:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:296:14: warning: main actor-isolated instance method 'webView(_:runJavaScriptConfirmPanelWithMessage:initiatedByFrame:completionHandler:)' cannot be used to satisfy nonisolated protocol requirement
+249:/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:307:14: warning: main actor-isolated instance method 'webView(_:runJavaScriptTextInputPanelWithPrompt:defaultText:initiatedByFrame:completionHandler:)' cannot be used to satisfy nonisolated protocol requirement
 ===== xcodebuild.log (tail -400) =====
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:860:7: note: should match space here
-        """##
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:777:7: note: change indentation of this line to match closing delimiter
-      try{ return e&&e.target&&e.target.tagName==='VIDEO'?e.target:null; }catch(e2){return null;}
-      ^
-        
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:778:5: error: insufficient indentation of next 2 lines in multi-line string literal
-    }
-    ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:860:5: note: should match space here
-        """##
-    ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:778:5: note: change indentation of these lines to match closing delimiter
-    }
-    ^
-        
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:780:7: error: insufficient indentation of line in multi-line string literal
-      try{
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:860:7: note: should match space here
-        """##
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:780:7: note: change indentation of this line to match closing delimiter
-      try{
-      ^
-        
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:784:7: error: insufficient indentation of line in multi-line string literal
-      }catch(e){}
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:860:7: note: should match space here
-        """##
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:784:7: note: change indentation of this line to match closing delimiter
-      }catch(e){}
-      ^
-        
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:785:5: error: insufficient indentation of next 2 lines in multi-line string literal
-    }
-    ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:860:5: note: should match space here
-        """##
-    ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:785:5: note: change indentation of these lines to match closing delimiter
-    }
-    ^
-        
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:787:7: error: insufficient indentation of next 2 lines in multi-line string literal
-      var v=isVideo(e);
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:860:7: note: should match space here
-        """##
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:787:7: note: change indentation of these lines to match closing delimiter
-      var v=isVideo(e);
-      ^
-        
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:789:5: error: insufficient indentation of next 2 lines in multi-line string literal
-    },true);
-    ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:860:5: note: should match space here
-        """##
-    ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:789:5: note: change indentation of these lines to match closing delimiter
-    },true);
-    ^
-        
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:791:7: error: insufficient indentation of line in multi-line string literal
-      if(isVideo(e)){ seekingAt=Date.now(); }
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:860:7: note: should match space here
-        """##
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:791:7: note: change indentation of this line to match closing delimiter
-      if(isVideo(e)){ seekingAt=Date.now(); }
-      ^
-        
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:792:5: error: insufficient indentation of next 2 lines in multi-line string literal
-    },true);
-    ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:860:5: note: should match space here
-        """##
-    ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:792:5: note: change indentation of these lines to match closing delimiter
-    },true);
-    ^
-        
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:794:7: error: insufficient indentation of next 4 lines in multi-line string literal
-      var v=isVideo(e);
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:860:7: note: should match space here
-        """##
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:794:7: note: change indentation of these lines to match closing delimiter
-      var v=isVideo(e);
-      ^
-        
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:798:5: error: insufficient indentation of next 2 lines in multi-line string literal
-    },true);
-    ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:860:5: note: should match space here
-        """##
-    ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:798:5: note: change indentation of these lines to match closing delimiter
-    },true);
-    ^
-        
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:800:7: error: insufficient indentation of next 3 lines in multi-line string literal
-      var v=isVideo(e);
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:860:7: note: should match space here
-        """##
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:800:7: note: change indentation of these lines to match closing delimiter
-      var v=isVideo(e);
-      ^
-        
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:803:5: error: insufficient indentation of next 5 lines in multi-line string literal
-    },true);
-    ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:860:5: note: should match space here
-        """##
-    ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:803:5: note: change indentation of these lines to match closing delimiter
-    },true);
-    ^
-        
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:809:7: error: insufficient indentation of line in multi-line string literal
-      try{
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:860:7: note: should match space here
-        """##
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:809:7: note: change indentation of this line to match closing delimiter
-      try{
-      ^
-        
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:819:7: error: insufficient indentation of line in multi-line string literal
-      }catch(e){}
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:860:7: note: should match space here
-        """##
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:819:7: note: change indentation of this line to match closing delimiter
-      }catch(e){}
-      ^
-        
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:820:5: error: insufficient indentation of next 2 lines in multi-line string literal
-    }
-    ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:860:5: note: should match space here
-        """##
-    ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:820:5: note: change indentation of these lines to match closing delimiter
-    }
-    ^
-        
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:822:7: error: insufficient indentation of line in multi-line string literal
-      try{
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:860:7: note: should match space here
-        """##
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:822:7: note: change indentation of this line to match closing delimiter
-      try{
-      ^
-        
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:834:7: error: insufficient indentation of line in multi-line string literal
-      }catch(e){ sweepPending=false; }
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:860:7: note: should match space here
-        """##
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:834:7: note: change indentation of this line to match closing delimiter
-      }catch(e){ sweepPending=false; }
-      ^
-        
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:835:5: error: insufficient indentation of next 3 lines in multi-line string literal
-    }
-    ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:860:5: note: should match space here
-        """##
-    ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:835:5: note: change indentation of these lines to match closing delimiter
-    }
-    ^
-        
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:839:7: error: insufficient indentation of line in multi-line string literal
-      window.addEventListener('resize',function(){
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:860:7: note: should match space here
-        """##
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:839:7: note: change indentation of this line to match closing delimiter
-      window.addEventListener('resize',function(){
-      ^
-        
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:842:7: error: insufficient indentation of next 2 lines in multi-line string literal
-      });
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:860:7: note: should match space here
-        """##
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:842:7: note: change indentation of these lines to match closing delimiter
-      });
-      ^
-        
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:845:7: error: insufficient indentation of line in multi-line string literal
-      });
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:860:7: note: should match space here
-        """##
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:845:7: note: change indentation of this line to match closing delimiter
-      });
-      ^
-        
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:846:5: error: insufficient indentation of next 2 lines in multi-line string literal
-    }catch(e){}
-    ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:860:5: note: should match space here
-        """##
-    ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:846:5: note: change indentation of these lines to match closing delimiter
-    }catch(e){}
-    ^
-        
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:849:7: error: insufficient indentation of next 2 lines in multi-line string literal
-      scheduleSweep(true);
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:860:7: note: should match space here
-        """##
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:849:7: note: change indentation of these lines to match closing delimiter
-      scheduleSweep(true);
-      ^
-        
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:853:7: error: insufficient indentation of next 2 lines in multi-line string literal
-      }catch(e){}
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:860:7: note: should match space here
-        """##
-      ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:853:7: note: change indentation of these lines to match closing delimiter
-      }catch(e){}
-      ^
-        
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:855:5: error: insufficient indentation of next 3 lines in multi-line string literal
-    }
-    ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:860:5: note: should match space here
-        """##
-    ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:855:5: note: change indentation of these lines to match closing delimiter
-    }
-    ^
-        
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:858:3: error: insufficient indentation of line in multi-line string literal
-  }catch(e){}
-  ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:860:3: note: should match space here
-        """##
-  ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:858:3: note: change indentation of this line to match closing delimiter
-  }catch(e){}
-  ^
-        
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:859:1: error: insufficient indentation of line in multi-line string literal
-})();
-^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:860:1: note: should match space here
-        """##
-^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift:859:1: note: change indentation of this line to match closing delimiter
-})();
-^
-        
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebBridge.swift:40:10: warning: main actor-isolated instance method 'userContentController(_:didReceive:)' cannot be used to satisfy nonisolated protocol requirement
+Command line invocation:
+    /Applications/Xcode_15.4.app/Contents/Developer/usr/bin/xcodebuild -project HgForIOS.xcodeproj -scheme HgForIOS -configuration Release -destination generic/platform=iOS -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY= build
+
+User defaults from command line:
+    IDEDerivedDataPathOverride = /Users/runner/work/easyl-ios/easyl-ios/build
+    IDEPackageSupportUseBuiltinSCM = YES
+
+Build settings from command line:
+    CODE_SIGN_IDENTITY = 
+    CODE_SIGNING_ALLOWED = NO
+    CODE_SIGNING_REQUIRED = NO
+
+Prepare packages
+
+note: Using codesigning identity override: 
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (1 target)
+    Target 'HgForIOS' in project 'HgForIOS' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ExecuteExternalTool /Applications/Xcode_15.4.app/Contents/Developer/usr/bin/actool --print-asset-tag-combinations --output-format xml1 /Users/runner/work/easyl-ios/easyl-ios/Resources/Assets.xcassets
+
+ExecuteExternalTool /Applications/Xcode_15.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode_15.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS17.5.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode_15.4.app/Contents/Developer/usr/bin/actool --version --output-format xml1
+
+ExecuteExternalTool /Applications/Xcode_15.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -v
+
+ExecuteExternalTool /Applications/Xcode_15.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
+
+Build description signature: 7e3244056542db21934aa7ff33f09a87
+Build description path: /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/XCBuildData/7e3244056542db21934aa7ff33f09a87.xcbuilddata
+CreateBuildDirectory /Users/runner/work/easyl-ios/easyl-ios/build/Build/Products
+    cd /Users/runner/work/easyl-ios/easyl-ios/HgForIOS.xcodeproj
+    builtin-create-build-directory /Users/runner/work/easyl-ios/easyl-ios/build/Build/Products
+
+CreateBuildDirectory /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex
+    cd /Users/runner/work/easyl-ios/easyl-ios/HgForIOS.xcodeproj
+    builtin-create-build-directory /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex
+
+ClangStatCache /Applications/Xcode_15.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode_15.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS17.5.sdk /Users/runner/work/easyl-ios/easyl-ios/build/SDKStatCaches.noindex/iphoneos17.5-21F77-f0fa7969d082b13145125136a829df3a.sdkstatcache
+    cd /Users/runner/work/easyl-ios/easyl-ios/HgForIOS.xcodeproj
+    /Applications/Xcode_15.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode_15.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS17.5.sdk -o /Users/runner/work/easyl-ios/easyl-ios/build/SDKStatCaches.noindex/iphoneos17.5-21F77-f0fa7969d082b13145125136a829df3a.sdkstatcache
+
+CreateBuildDirectory /Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos
+    cd /Users/runner/work/easyl-ios/easyl-ios/HgForIOS.xcodeproj
+    builtin-create-build-directory /Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos
+
+CreateBuildDirectory /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/EagerLinkingTBDs/Release-iphoneos
+    cd /Users/runner/work/easyl-ios/easyl-ios/HgForIOS.xcodeproj
+    builtin-create-build-directory /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/EagerLinkingTBDs/Release-iphoneos
+
+MkDir /Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos/HgForIOS.app (in target 'HgForIOS' from project 'HgForIOS')
+    cd /Users/runner/work/easyl-ios/easyl-ios
+    /bin/mkdir -p /Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos/HgForIOS.app
+
+WriteAuxiliaryFile /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/all-product-headers.yaml (in target 'HgForIOS' from project 'HgForIOS')
+    cd /Users/runner/work/easyl-ios/easyl-ios
+    write-file /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/all-product-headers.yaml
+
+WriteAuxiliaryFile /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/HgForIOS.hmap (in target 'HgForIOS' from project 'HgForIOS')
+    cd /Users/runner/work/easyl-ios/easyl-ios
+    write-file /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/HgForIOS.hmap
+
+WriteAuxiliaryFile /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/HgForIOS-project-headers.hmap (in target 'HgForIOS' from project 'HgForIOS')
+    cd /Users/runner/work/easyl-ios/easyl-ios
+    write-file /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/HgForIOS-project-headers.hmap
+
+WriteAuxiliaryFile /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/HgForIOS-own-target-headers.hmap (in target 'HgForIOS' from project 'HgForIOS')
+    cd /Users/runner/work/easyl-ios/easyl-ios
+    write-file /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/HgForIOS-own-target-headers.hmap
+
+WriteAuxiliaryFile /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/HgForIOS-generated-files.hmap (in target 'HgForIOS' from project 'HgForIOS')
+    cd /Users/runner/work/easyl-ios/easyl-ios
+    write-file /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/HgForIOS-generated-files.hmap
+
+WriteAuxiliaryFile /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/HgForIOS-all-target-headers.hmap (in target 'HgForIOS' from project 'HgForIOS')
+    cd /Users/runner/work/easyl-ios/easyl-ios
+    write-file /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/HgForIOS-all-target-headers.hmap
+
+WriteAuxiliaryFile /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/HgForIOS-all-non-framework-target-headers.hmap (in target 'HgForIOS' from project 'HgForIOS')
+    cd /Users/runner/work/easyl-ios/easyl-ios
+    write-file /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/HgForIOS-all-non-framework-target-headers.hmap
+
+WriteAuxiliaryFile /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HgForIOS_const_extract_protocols.json (in target 'HgForIOS' from project 'HgForIOS')
+    cd /Users/runner/work/easyl-ios/easyl-ios
+    write-file /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HgForIOS_const_extract_protocols.json
+
+WriteAuxiliaryFile /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HgForIOS.LinkFileList (in target 'HgForIOS' from project 'HgForIOS')
+    cd /Users/runner/work/easyl-ios/easyl-ios
+    write-file /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HgForIOS.LinkFileList
+
+WriteAuxiliaryFile /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HgForIOS.SwiftFileList (in target 'HgForIOS' from project 'HgForIOS')
+    cd /Users/runner/work/easyl-ios/easyl-ios
+    write-file /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HgForIOS.SwiftFileList
+
+WriteAuxiliaryFile /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HgForIOS-OutputFileMap.json (in target 'HgForIOS' from project 'HgForIOS')
+    cd /Users/runner/work/easyl-ios/easyl-ios
+    write-file /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HgForIOS-OutputFileMap.json
+
+GenerateAssetSymbols /Users/runner/work/easyl-ios/easyl-ios/Resources/Assets.xcassets (in target 'HgForIOS' from project 'HgForIOS')
+    cd /Users/runner/work/easyl-ios/easyl-ios
+    /Applications/Xcode_15.4.app/Contents/Developer/usr/bin/actool --output-format human-readable-text --notices --warnings --export-dependency-info /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/assetcatalog_dependencies --output-partial-info-plist /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/assetcatalog_generated_info.plist --app-icon AppIcon --accent-color AccentColor --compress-pngs --enable-on-demand-resources YES --development-region en --target-device iphone --minimum-deployment-target 16.0 --platform iphoneos --compile /Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos/HgForIOS.app /Users/runner/work/easyl-ios/easyl-ios/Resources/Assets.xcassets --bundle-identifier com.hg.app --generate-swift-asset-symbol-extensions NO --generate-swift-asset-symbols /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/DerivedSources/GeneratedAssetSymbols.swift --generate-objc-asset-symbols /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/DerivedSources/GeneratedAssetSymbols.h --generate-asset-symbol-index /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/DerivedSources/GeneratedAssetSymbols-Index.plist
+/* com.apple.actool.compilation-results */
+/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/DerivedSources/GeneratedAssetSymbols-Index.plist
+/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/DerivedSources/GeneratedAssetSymbols.h
+/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/DerivedSources/GeneratedAssetSymbols.swift
+
+
+CpResource /Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos/HgForIOS.app/splash_brand.webp /Users/runner/work/easyl-ios/easyl-ios/Resources/splash_brand.webp (in target 'HgForIOS' from project 'HgForIOS')
+    cd /Users/runner/work/easyl-ios/easyl-ios
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks /Users/runner/work/easyl-ios/easyl-ios/Resources/splash_brand.webp /Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos/HgForIOS.app
+
+CpResource /Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos/HgForIOS.app/splash_anchor.json /Users/runner/work/easyl-ios/easyl-ios/Resources/splash_anchor.json (in target 'HgForIOS' from project 'HgForIOS')
+    cd /Users/runner/work/easyl-ios/easyl-ios
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks /Users/runner/work/easyl-ios/easyl-ios/Resources/splash_anchor.json /Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos/HgForIOS.app
+
+CopyPNGFile /Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos/HgForIOS.app/splash_brand.png /Users/runner/work/easyl-ios/easyl-ios/Resources/splash_brand.png (in target 'HgForIOS' from project 'HgForIOS')
+    cd /Users/runner/work/easyl-ios/easyl-ios
+    /Applications/Xcode_15.4.app/Contents/Developer/usr/bin/copypng -compress -strip-PNG-text /Users/runner/work/easyl-ios/easyl-ios/Resources/splash_brand.png /Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos/HgForIOS.app/splash_brand.png
+
+CompileAssetCatalog /Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos/HgForIOS.app /Users/runner/work/easyl-ios/easyl-ios/Resources/Assets.xcassets (in target 'HgForIOS' from project 'HgForIOS')
+    cd /Users/runner/work/easyl-ios/easyl-ios
+    /Applications/Xcode_15.4.app/Contents/Developer/usr/bin/actool --output-format human-readable-text --notices --warnings --export-dependency-info /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/assetcatalog_dependencies --output-partial-info-plist /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/assetcatalog_generated_info.plist --app-icon AppIcon --accent-color AccentColor --compress-pngs --enable-on-demand-resources YES --development-region en --target-device iphone --minimum-deployment-target 16.0 --platform iphoneos --compile /Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos/HgForIOS.app /Users/runner/work/easyl-ios/easyl-ios/Resources/Assets.xcassets
+/* com.apple.actool.compilation-results */
+/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/assetcatalog_generated_info.plist
+/Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos/HgForIOS.app/AppIcon60x60@2x.png
+/Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos/HgForIOS.app/AppIcon76x76@2x~ipad.png
+/Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos/HgForIOS.app/Assets.car
+
+
+SwiftDriver HgForIOS normal arm64 com.apple.xcode.tools.swift.compiler (in target 'HgForIOS' from project 'HgForIOS')
+    cd /Users/runner/work/easyl-ios/easyl-ios
+    builtin-SwiftDriver -- /Applications/Xcode_15.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name HgForIOS -O -whole-module-optimization -enforce-exclusivity\=checked @/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HgForIOS.SwiftFileList -sdk /Applications/Xcode_15.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS17.5.sdk -target arm64-apple-ios16.0 -enable-bare-slash-regex -g -module-cache-path /Users/runner/work/easyl-ios/easyl-ios/build/ModuleCache.noindex -Xfrontend -serialize-debugging-options -swift-version 5 -I /Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos -F /Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos -c -num-threads 3 -Xcc -ivfsstatcache -Xcc /Users/runner/work/easyl-ios/easyl-ios/build/SDKStatCaches.noindex/iphoneos17.5-21F77-f0fa7969d082b13145125136a829df3a.sdkstatcache -output-file-map /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HgForIOS-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HgForIOS.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/runner/work/easyl-ios/easyl-ios/build/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HgForIOS_const_extract_protocols.json -Xcc -iquote -Xcc /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/HgForIOS-generated-files.hmap -Xcc -I/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/HgForIOS-own-target-headers.hmap -Xcc -I/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/HgForIOS-all-target-headers.hmap -Xcc -iquote -Xcc /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/HgForIOS-project-headers.hmap -Xcc -I/Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos/include -Xcc -I/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/DerivedSources-normal/arm64 -Xcc -I/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/DerivedSources/arm64 -Xcc -I/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/DerivedSources -emit-objc-header -emit-objc-header-path /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HgForIOS-Swift.h -working-directory /Users/runner/work/easyl-ios/easyl-ios -no-emit-module-separately-wmo
+
+SwiftCompile normal arm64 Compiling\ AppConfig.swift,\ AppOrientation.swift,\ BridgeScripts.swift,\ EntryProbe.swift,\ EnvProbe.swift,\ HTTP.swift,\ HgAnalytics.swift,\ HgApp.swift,\ HostTrustStore.swift,\ Log.swift,\ PromoBindStore.swift,\ PromoCapture.swift,\ RootView.swift,\ SeedCatalog.swift,\ SettingsView.swift,\ ShellModel.swift,\ ShellOverlays.swift,\ UpdateModels.swift,\ UpdateService.swift,\ WebBridge.swift,\ WebShellView.swift,\ GeneratedAssetSymbols.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Support/AppConfig.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Support/AppOrientation.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/EntryProbe.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Support/EnvProbe.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Net/HTTP.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Analytics/HgAnalytics.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/App/HgApp.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Support/HostTrustStore.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Support/Log.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Promo/PromoBindStore.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Promo/PromoCapture.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/App/RootView.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/SeedCatalog.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Settings/SettingsView.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/ShellModel.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/ShellOverlays.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Update/UpdateModels.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Update/UpdateService.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebBridge.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'HgForIOS' from project 'HgForIOS')
+    cd /Users/runner/work/easyl-ios/easyl-ios
+    builtin-swiftTaskExecution -- /Applications/Xcode_15.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend -frontend -c /Users/runner/work/easyl-ios/easyl-ios/Sources/Support/AppConfig.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Support/AppOrientation.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/EntryProbe.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Support/EnvProbe.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Net/HTTP.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Analytics/HgAnalytics.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/App/HgApp.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Support/HostTrustStore.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Support/Log.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Promo/PromoBindStore.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Promo/PromoCapture.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/App/RootView.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/SeedCatalog.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Settings/SettingsView.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/ShellModel.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/ShellOverlays.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Update/UpdateModels.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Update/UpdateService.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebBridge.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/DerivedSources/GeneratedAssetSymbols.swift -supplementary-output-file-map /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/supplementaryOutputs-1 -target arm64-apple-ios16.0 -Xllvm -aarch64-use-tbi -enable-objc-interop -stack-check -sdk /Applications/Xcode_15.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS17.5.sdk -I /Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos -F /Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos -no-color-diagnostics -g -module-cache-path /Users/runner/work/easyl-ios/easyl-ios/build/ModuleCache.noindex -swift-version 5 -enforce-exclusivity\=checked -O -serialize-debugging-options -const-gather-protocols-file /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HgForIOS_const_extract_protocols.json -enable-bare-slash-regex -empty-abi-descriptor -validate-clang-modules-once -clang-build-session-file /Users/runner/work/easyl-ios/easyl-ios/build/ModuleCache.noindex/Session.modulevalidation -Xcc -working-directory -Xcc /Users/runner/work/easyl-ios/easyl-ios -resource-dir /Applications/Xcode_15.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift -Xcc -ivfsstatcache -Xcc /Users/runner/work/easyl-ios/easyl-ios/build/SDKStatCaches.noindex/iphoneos17.5-21F77-f0fa7969d082b13145125136a829df3a.sdkstatcache -Xcc -I/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/swift-overrides.hmap -Xcc -iquote -Xcc /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/HgForIOS-generated-files.hmap -Xcc -I/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/HgForIOS-own-target-headers.hmap -Xcc -I/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/HgForIOS-all-target-headers.hmap -Xcc -iquote -Xcc /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/HgForIOS-project-headers.hmap -Xcc -I/Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos/include -Xcc -I/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/DerivedSources-normal/arm64 -Xcc -I/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/DerivedSources/arm64 -Xcc -I/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/DerivedSources -module-name HgForIOS -frontend-parseable-output -disable-clang-spi -target-sdk-version 17.5 -target-sdk-name iphoneos17.5 -external-plugin-path /Applications/Xcode_15.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS17.5.sdk/usr/lib/swift/host/plugins\#/Applications/Xcode_15.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS17.5.sdk/usr/bin/swift-plugin-server -external-plugin-path /Applications/Xcode_15.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS17.5.sdk/usr/local/lib/swift/host/plugins\#/Applications/Xcode_15.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS17.5.sdk/usr/bin/swift-plugin-server -external-plugin-path /Applications/Xcode_15.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins\#/Applications/Xcode_15.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server -external-plugin-path /Applications/Xcode_15.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/local/lib/swift/host/plugins\#/Applications/Xcode_15.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server -plugin-path /Applications/Xcode_15.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins -plugin-path /Applications/Xcode_15.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/local/lib/swift/host/plugins -enable-default-cmo -num-threads 3 -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/AppConfig.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/AppOrientation.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/BridgeScripts.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/EntryProbe.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/EnvProbe.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HTTP.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HgAnalytics.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HgApp.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HostTrustStore.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/Log.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/PromoBindStore.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/PromoCapture.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/RootView.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/SeedCatalog.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/SettingsView.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/ShellModel.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/ShellOverlays.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/UpdateModels.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/UpdateService.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/WebBridge.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/WebShellView.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/GeneratedAssetSymbols.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/AppConfig.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/AppOrientation.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/BridgeScripts.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/EntryProbe.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/EnvProbe.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HTTP.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HgAnalytics.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HgApp.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HostTrustStore.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/Log.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/PromoBindStore.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/PromoCapture.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/RootView.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/SeedCatalog.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/SettingsView.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/ShellModel.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/ShellOverlays.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/UpdateModels.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/UpdateService.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/WebBridge.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/WebShellView.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/GeneratedAssetSymbols.o
+CompileSwift normal arm64 (in target 'HgForIOS' from project 'HgForIOS')
+    cd /Users/runner/work/easyl-ios/easyl-ios
+    /Applications/Xcode_15.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend -c /Users/runner/work/easyl-ios/easyl-ios/Sources/Support/AppConfig.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Support/AppOrientation.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/BridgeScripts.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/EntryProbe.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Support/EnvProbe.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Net/HTTP.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Analytics/HgAnalytics.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/App/HgApp.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Support/HostTrustStore.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Support/Log.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Promo/PromoBindStore.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Promo/PromoCapture.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/App/RootView.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/SeedCatalog.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Settings/SettingsView.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/ShellModel.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/ShellOverlays.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Update/UpdateModels.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Update/UpdateService.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebBridge.swift /Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/DerivedSources/GeneratedAssetSymbols.swift -supplementary-output-file-map /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/supplementaryOutputs-1 -target arm64-apple-ios16.0 -Xllvm -aarch64-use-tbi -enable-objc-interop -stack-check -sdk /Applications/Xcode_15.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS17.5.sdk -I /Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos -F /Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos -no-color-diagnostics -g -module-cache-path /Users/runner/work/easyl-ios/easyl-ios/build/ModuleCache.noindex -swift-version 5 -enforce-exclusivity\=checked -O -serialize-debugging-options -const-gather-protocols-file /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HgForIOS_const_extract_protocols.json -enable-bare-slash-regex -empty-abi-descriptor -validate-clang-modules-once -clang-build-session-file /Users/runner/work/easyl-ios/easyl-ios/build/ModuleCache.noindex/Session.modulevalidation -Xcc -working-directory -Xcc /Users/runner/work/easyl-ios/easyl-ios -resource-dir /Applications/Xcode_15.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift -Xcc -ivfsstatcache -Xcc /Users/runner/work/easyl-ios/easyl-ios/build/SDKStatCaches.noindex/iphoneos17.5-21F77-f0fa7969d082b13145125136a829df3a.sdkstatcache -Xcc -I/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/swift-overrides.hmap -Xcc -iquote -Xcc /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/HgForIOS-generated-files.hmap -Xcc -I/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/HgForIOS-own-target-headers.hmap -Xcc -I/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/HgForIOS-all-target-headers.hmap -Xcc -iquote -Xcc /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/HgForIOS-project-headers.hmap -Xcc -I/Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos/include -Xcc -I/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/DerivedSources-normal/arm64 -Xcc -I/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/DerivedSources/arm64 -Xcc -I/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/DerivedSources -module-name HgForIOS -frontend-parseable-output -disable-clang-spi -target-sdk-version 17.5 -target-sdk-name iphoneos17.5 -external-plugin-path /Applications/Xcode_15.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS17.5.sdk/usr/lib/swift/host/plugins\#/Applications/Xcode_15.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS17.5.sdk/usr/bin/swift-plugin-server -external-plugin-path /Applications/Xcode_15.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS17.5.sdk/usr/local/lib/swift/host/plugins\#/Applications/Xcode_15.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS17.5.sdk/usr/bin/swift-plugin-server -external-plugin-path /Applications/Xcode_15.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins\#/Applications/Xcode_15.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server -external-plugin-path /Applications/Xcode_15.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/local/lib/swift/host/plugins\#/Applications/Xcode_15.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server -plugin-path /Applications/Xcode_15.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins -plugin-path /Applications/Xcode_15.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/local/lib/swift/host/plugins -enable-default-cmo -num-threads 3 -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/AppConfig.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/AppOrientation.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/BridgeScripts.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/EntryProbe.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/EnvProbe.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HTTP.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HgAnalytics.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HgApp.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HostTrustStore.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/Log.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/PromoBindStore.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/PromoCapture.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/RootView.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/SeedCatalog.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/SettingsView.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/ShellModel.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/ShellOverlays.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/UpdateModels.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/UpdateService.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/WebBridge.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/WebShellView.o -o /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/GeneratedAssetSymbols.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/AppConfig.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/AppOrientation.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/BridgeScripts.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/EntryProbe.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/EnvProbe.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HTTP.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HgAnalytics.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HgApp.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HostTrustStore.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/Log.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/PromoBindStore.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/PromoCapture.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/RootView.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/SeedCatalog.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/SettingsView.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/ShellModel.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/ShellOverlays.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/UpdateModels.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/UpdateService.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/WebBridge.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/WebShellView.o -index-unit-output-path /HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/GeneratedAssetSymbols.o
+/Users/runner/work/easyl-ios/easyl-ios/Sources/App/RootView.swift:134:9: error: the compiler is unable to type-check this expression in reasonable time; try breaking up the expression into distinct sub-expressions
+        GeometryReader { geo in
+        ^~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebBridge.swift:41:10: warning: main actor-isolated instance method 'userContentController(_:didReceive:)' cannot be used to satisfy nonisolated protocol requirement
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
          ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebBridge.swift:40:10: note: add 'nonisolated' to 'userContentController(_:didReceive:)' to make this instance method not isolated to the actor
+/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebBridge.swift:41:10: note: add 'nonisolated' to 'userContentController(_:didReceive:)' to make this instance method not isolated to the actor
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
          ^
     nonisolated 
 WebKit.WKScriptMessageHandler:3:10: note: 'userContentController(_:didReceive:)' declared here
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage)
          ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:194:14: warning: main actor-isolated instance method 'webView(_:decidePolicyFor:decisionHandler:)' cannot be used to satisfy nonisolated protocol requirement
+/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:196:14: warning: main actor-isolated instance method 'webView(_:decidePolicyFor:decisionHandler:)' cannot be used to satisfy nonisolated protocol requirement
         func webView(_ webView: WKWebView,
              ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:194:14: note: add 'nonisolated' to 'webView(_:decidePolicyFor:decisionHandler:)' to make this instance method not isolated to the actor
+/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:196:14: note: add 'nonisolated' to 'webView(_:decidePolicyFor:decisionHandler:)' to make this instance method not isolated to the actor
         func webView(_ webView: WKWebView,
              ^
         nonisolated 
 WebKit.WKNavigationDelegate:3:19: note: 'webView(_:decidePolicyFor:decisionHandler:)' declared here
     optional func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void)
                   ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:240:14: warning: main actor-isolated instance method 'webView(_:didStartProvisionalNavigation:)' cannot be used to satisfy nonisolated protocol requirement
+/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:242:14: warning: main actor-isolated instance method 'webView(_:didStartProvisionalNavigation:)' cannot be used to satisfy nonisolated protocol requirement
         func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
              ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:240:14: note: add 'nonisolated' to 'webView(_:didStartProvisionalNavigation:)' to make this instance method not isolated to the actor
+/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:242:14: note: add 'nonisolated' to 'webView(_:didStartProvisionalNavigation:)' to make this instance method not isolated to the actor
         func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
              ^
         nonisolated 
 WebKit.WKNavigationDelegate:22:19: note: 'webView(_:didStartProvisionalNavigation:)' declared here
     optional func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!)
                   ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:255:14: warning: main actor-isolated instance method 'webView(_:didFailProvisionalNavigation:withError:)' cannot be used to satisfy nonisolated protocol requirement
+/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:257:14: warning: main actor-isolated instance method 'webView(_:didFailProvisionalNavigation:withError:)' cannot be used to satisfy nonisolated protocol requirement
         func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
              ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:255:14: note: add 'nonisolated' to 'webView(_:didFailProvisionalNavigation:withError:)' to make this instance method not isolated to the actor
+/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:257:14: note: add 'nonisolated' to 'webView(_:didFailProvisionalNavigation:withError:)' to make this instance method not isolated to the actor
         func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
              ^
         nonisolated 
 WebKit.WKNavigationDelegate:26:19: note: 'webView(_:didFailProvisionalNavigation:withError:)' declared here
     optional func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: any Error)
                   ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:244:14: warning: main actor-isolated instance method 'webView(_:didFinish:)' cannot be used to satisfy nonisolated protocol requirement
+/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:246:14: warning: main actor-isolated instance method 'webView(_:didFinish:)' cannot be used to satisfy nonisolated protocol requirement
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
              ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:244:14: note: add 'nonisolated' to 'webView(_:didFinish:)' to make this instance method not isolated to the actor
+/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:246:14: note: add 'nonisolated' to 'webView(_:didFinish:)' to make this instance method not isolated to the actor
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
              ^
         nonisolated 
 WebKit.WKNavigationDelegate:32:19: note: 'webView(_:didFinish:)' declared here
     optional func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!)
                   ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:249:14: warning: main actor-isolated instance method 'webView(_:didFail:withError:)' cannot be used to satisfy nonisolated protocol requirement
+/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:251:14: warning: main actor-isolated instance method 'webView(_:didFail:withError:)' cannot be used to satisfy nonisolated protocol requirement
         func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
              ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:249:14: note: add 'nonisolated' to 'webView(_:didFail:withError:)' to make this instance method not isolated to the actor
+/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:251:14: note: add 'nonisolated' to 'webView(_:didFail:withError:)' to make this instance method not isolated to the actor
         func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
              ^
         nonisolated 
 WebKit.WKNavigationDelegate:36:19: note: 'webView(_:didFail:withError:)' declared here
     optional func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: any Error)
                   ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:261:14: warning: main actor-isolated instance method 'webViewWebContentProcessDidTerminate' cannot be used to satisfy nonisolated protocol requirement
+/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:263:14: warning: main actor-isolated instance method 'webViewWebContentProcessDidTerminate' cannot be used to satisfy nonisolated protocol requirement
         func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
              ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:261:14: note: add 'nonisolated' to 'webViewWebContentProcessDidTerminate' to make this instance method not isolated to the actor
+/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:263:14: note: add 'nonisolated' to 'webViewWebContentProcessDidTerminate' to make this instance method not isolated to the actor
         func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
              ^
         nonisolated 
 WebKit.WKNavigationDelegate:46:19: note: 'webViewWebContentProcessDidTerminate' declared here
     optional func webViewWebContentProcessDidTerminate(_ webView: WKWebView)
                   ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:268:14: warning: main actor-isolated instance method 'webView(_:createWebViewWith:for:windowFeatures:)' cannot be used to satisfy nonisolated protocol requirement
+/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:270:14: warning: main actor-isolated instance method 'webView(_:createWebViewWith:for:windowFeatures:)' cannot be used to satisfy nonisolated protocol requirement
         func webView(_ webView: WKWebView,
              ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:268:14: note: add 'nonisolated' to 'webView(_:createWebViewWith:for:windowFeatures:)' to make this instance method not isolated to the actor
+/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:270:14: note: add 'nonisolated' to 'webView(_:createWebViewWith:for:windowFeatures:)' to make this instance method not isolated to the actor
         func webView(_ webView: WKWebView,
              ^
         nonisolated 
 WebKit.WKUIDelegate:3:19: note: 'webView(_:createWebViewWith:for:windowFeatures:)' declared here
     optional func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView?
                   ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:284:14: warning: main actor-isolated instance method 'webView(_:runJavaScriptAlertPanelWithMessage:initiatedByFrame:completionHandler:)' cannot be used to satisfy nonisolated protocol requirement
+/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:286:14: warning: main actor-isolated instance method 'webView(_:runJavaScriptAlertPanelWithMessage:initiatedByFrame:completionHandler:)' cannot be used to satisfy nonisolated protocol requirement
         func webView(_ webView: WKWebView,
              ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:284:14: note: add 'nonisolated' to 'webView(_:runJavaScriptAlertPanelWithMessage:initiatedByFrame:completionHandler:)' to make this instance method not isolated to the actor
+/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:286:14: note: add 'nonisolated' to 'webView(_:runJavaScriptAlertPanelWithMessage:initiatedByFrame:completionHandler:)' to make this instance method not isolated to the actor
         func webView(_ webView: WKWebView,
              ^
         nonisolated 
 WebKit.WKUIDelegate:9:19: note: 'webView(_:runJavaScriptAlertPanelWithMessage:initiatedByFrame:completionHandler:)' declared here
     optional func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void)
                   ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:294:14: warning: main actor-isolated instance method 'webView(_:runJavaScriptConfirmPanelWithMessage:initiatedByFrame:completionHandler:)' cannot be used to satisfy nonisolated protocol requirement
+/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:296:14: warning: main actor-isolated instance method 'webView(_:runJavaScriptConfirmPanelWithMessage:initiatedByFrame:completionHandler:)' cannot be used to satisfy nonisolated protocol requirement
         func webView(_ webView: WKWebView,
              ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:294:14: note: add 'nonisolated' to 'webView(_:runJavaScriptConfirmPanelWithMessage:initiatedByFrame:completionHandler:)' to make this instance method not isolated to the actor
+/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:296:14: note: add 'nonisolated' to 'webView(_:runJavaScriptConfirmPanelWithMessage:initiatedByFrame:completionHandler:)' to make this instance method not isolated to the actor
         func webView(_ webView: WKWebView,
              ^
         nonisolated 
 WebKit.WKUIDelegate:13:19: note: 'webView(_:runJavaScriptConfirmPanelWithMessage:initiatedByFrame:completionHandler:)' declared here
     optional func webView(_ webView: WKWebView, runJavaScriptConfirmPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (Bool) -> Void)
                   ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:305:14: warning: main actor-isolated instance method 'webView(_:runJavaScriptTextInputPanelWithPrompt:defaultText:initiatedByFrame:completionHandler:)' cannot be used to satisfy nonisolated protocol requirement
+/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:307:14: warning: main actor-isolated instance method 'webView(_:runJavaScriptTextInputPanelWithPrompt:defaultText:initiatedByFrame:completionHandler:)' cannot be used to satisfy nonisolated protocol requirement
         func webView(_ webView: WKWebView,
              ^
-/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:305:14: note: add 'nonisolated' to 'webView(_:runJavaScriptTextInputPanelWithPrompt:defaultText:initiatedByFrame:completionHandler:)' to make this instance method not isolated to the actor
+/Users/runner/work/easyl-ios/easyl-ios/Sources/Shell/WebShellView.swift:307:14: note: add 'nonisolated' to 'webView(_:runJavaScriptTextInputPanelWithPrompt:defaultText:initiatedByFrame:completionHandler:)' to make this instance method not isolated to the actor
         func webView(_ webView: WKWebView,
              ^
         nonisolated 
 WebKit.WKUIDelegate:17:19: note: 'webView(_:runJavaScriptTextInputPanelWithPrompt:defaultText:initiatedByFrame:completionHandler:)' declared here
     optional func webView(_ webView: WKWebView, runJavaScriptTextInputPanelWithPrompt prompt: String, defaultText: String?, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (String?) -> Void)
                   ^
+
+SwiftDriver\ Compilation HgForIOS normal arm64 com.apple.xcode.tools.swift.compiler (in target 'HgForIOS' from project 'HgForIOS')
+    cd /Users/runner/work/easyl-ios/easyl-ios
+    builtin-Swift-Compilation -- /Applications/Xcode_15.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name HgForIOS -O -whole-module-optimization -enforce-exclusivity\=checked @/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HgForIOS.SwiftFileList -sdk /Applications/Xcode_15.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS17.5.sdk -target arm64-apple-ios16.0 -enable-bare-slash-regex -g -module-cache-path /Users/runner/work/easyl-ios/easyl-ios/build/ModuleCache.noindex -Xfrontend -serialize-debugging-options -swift-version 5 -I /Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos -F /Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos -c -num-threads 3 -Xcc -ivfsstatcache -Xcc /Users/runner/work/easyl-ios/easyl-ios/build/SDKStatCaches.noindex/iphoneos17.5-21F77-f0fa7969d082b13145125136a829df3a.sdkstatcache -output-file-map /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HgForIOS-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HgForIOS.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/runner/work/easyl-ios/easyl-ios/build/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HgForIOS_const_extract_protocols.json -Xcc -iquote -Xcc /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/HgForIOS-generated-files.hmap -Xcc -I/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/HgForIOS-own-target-headers.hmap -Xcc -I/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/HgForIOS-all-target-headers.hmap -Xcc -iquote -Xcc /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/HgForIOS-project-headers.hmap -Xcc -I/Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos/include -Xcc -I/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/DerivedSources-normal/arm64 -Xcc -I/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/DerivedSources/arm64 -Xcc -I/Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/DerivedSources -emit-objc-header -emit-objc-header-path /Users/runner/work/easyl-ios/easyl-ios/build/Build/Intermediates.noindex/HgForIOS.build/Release-iphoneos/HgForIOS.build/Objects-normal/arm64/HgForIOS-Swift.h -working-directory /Users/runner/work/easyl-ios/easyl-ios -no-emit-module-separately-wmo
 
 ProcessInfoPlistFile /Users/runner/work/easyl-ios/easyl-ios/build/Build/Products/Release-iphoneos/HgForIOS.app/Info.plist /Users/runner/work/easyl-ios/easyl-ios/Resources/Info.plist (in target 'HgForIOS' from project 'HgForIOS')
     cd /Users/runner/work/easyl-ios/easyl-ios
