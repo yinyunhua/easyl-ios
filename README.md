@@ -149,14 +149,31 @@ bash scripts/build_unsigned_ipa.sh  # 产出 HgForIOS-unsigned.ipa
 | 项 | 值 |
 |---|---|
 | 仓库 / 分支 | `github.com/yinyunhua/easyl-ios` → `hgforios` |
-| 成功运行 | run **#16**（#14/#16 均 success；#15 因多行字符串缩进失败，已修并加本地 lint，macos-14 + Xcode 15.4） |
-| Release（免登录下载） | `https://github.com/yinyunhua/easyl-ios/releases/tag/hgforios-ipa-16` |
-| IPA | `https://github.com/yinyunhua/easyl-ios/releases/download/hgforios-ipa-16/HgForIOS-unsigned.ipa` |
+| 成功运行 | run **#17**（#16/#17 连续 success；#15 因多行字符串缩进失败，已修并加本地 lint，macos-14 + Xcode 15.4） |
+| Release（免登录下载） | `https://github.com/yinyunhua/easyl-ios/releases/tag/hgforios-ipa-17` |
+| IPA | `https://github.com/yinyunhua/easyl-ios/releases/download/hgforios-ipa-17/HgForIOS-unsigned.ipa` |
 | 本地副本 | `hgtv_ios/dist/HgForIOS-unsigned.ipa` |
-| SHA256（run #16） | `C02A9528780FA6EBC9A6EFF8DCACF9034142098A0B4B3F58A0B3CF37211546F7` |
-| 校验脚本 | `python scripts/verify_ipa.py` → 结构 / Info.plist / arm64 可执行体 / 25 个补丁标记 / 闪屏锚点 全部通过 |
+| SHA256（run #17） | `232181D965D63CC66C3DBFCB59221E6087E61E06B15B0FDDF4F36D4E31165654` |
+| 校验脚本 | `python scripts/verify_ipa.py` → 结构 / Info.plist / arm64 可执行体 / 28 个补丁标记 / 闪屏锚点 全部通过 |
 
-### 真机反馈第二轮 6 项（run #16）
+### run #16 → #17：黑屏回归与防护（重要）
+
+run #16 上真机后出现「只剩声音、没有画面」。定位到两个我自己引入的过度操作：
+
+1. **误伤整页容器**：底部导航判定只看了「贴底 + 含 ≥3 个主 tab 关键词」，结果把**同时含 `<video>` 的外层容器**也加上了 `display:none` → 播放层整块消失（音频继续走）。
+2. **强改播放层定位**：`.hg-player-box` 里写了 `position:relative + top:0`，把 H5 原本 `position:fixed` 的全屏播放层挪回文档流，落到视口外。
+
+三重防护（run #17）：
+
+| 防护 | 实现 |
+|---|---|
+| 不误伤 | `containsVideo(el)` 守卫：任何子树含 `<video>`（或自身是 video）的节点**永不隐藏**；判定同时收紧为「高度 ≤22%vh / 宽度 ≥70%vw / 贴底」等 |
+| 不动定位 | 仅当播放容器是**文档流内**（`position: static/relative`）才给它加 `.hg-player-box` 撑高；`fixed/absolute/sticky` 的全屏播放层保持原位原尺寸 |
+| 自检 + 回滚 | `videoVisible()` 检查视频 rect/computed display/visibility/opacity；隐藏导航或进入沉浸式后若视频不可见，**立即整体回滚**并记录 `HGApp.__lastRollback`；居中 nudge 也带 ±25%vh 幅度上限与失败回滚 |
+
+原生侧再加一道看门狗：进入播放页/沉浸式 1.5s 后读 `HGApp.playerDiag()`（视频数、可见性、隐藏节点数、回滚标记），一旦判定不可见就自动 `setPlayerMode(false)+setImmersive(false)`、解锁方向并 toast「已回退播放页增强（避免黑屏）」——最坏结果是保留导航栏，而不是黑屏。
+
+真机反馈第二轮 6 项（run #16 引入、run #17 保留并加固）：
 
 | # | 现象 | 根因 | 修法 |
 |---|---|---|---|

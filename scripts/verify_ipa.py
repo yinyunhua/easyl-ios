@@ -42,6 +42,10 @@ MARKERS = [
     b"setPlayerMode",
     b"centerVideo",
     b"markChrome",
+    # v2.2（黑屏回归防护：可见性自检 + 自动回滚 + 诊断）
+    b"playerDiag",
+    b"videoVisible",
+    b"containsVideo",
 ]
 
 EXTRA_FILES = [
