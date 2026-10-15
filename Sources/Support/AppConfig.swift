@@ -96,6 +96,7 @@ enum AppConfig {
     enum StoreKey {
         static let extraAds = "hg.patch.extraAds"
         static let playerExtra = "hg.patch.playerExtra"
+        static let playerTune = "hg.player.tune"
     }
 
     static var extraAdsEnabled: Bool {
@@ -115,6 +116,16 @@ enum AppConfig {
 
     static func setPlayerExtraEnabled(_ enabled: Bool) {
         UserDefaults.standard.set(enabled, forKey: StoreKey.playerExtra)
+    }
+
+    /// 播放器调优（竖屏）：控件行常显、选集条贴底并预留高度、速度键左移、画面满宽渲染、稳定居中。
+    static var playerTuneEnabled: Bool {
+        if UserDefaults.standard.object(forKey: StoreKey.playerTune) == nil { return true }
+        return UserDefaults.standard.bool(forKey: StoreKey.playerTune)
+    }
+
+    static func setPlayerTuneEnabled(_ enabled: Bool) {
+        UserDefaults.standard.set(enabled, forKey: StoreKey.playerTune)
     }
 
     /// Debug 构建才启用 debug 种子（对应 BuildConfig.DEBUG）。Release 下用户可在设置页手动覆盖。

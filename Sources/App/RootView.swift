@@ -83,59 +83,78 @@ struct RootView: View {
     // MARK: - 悬浮控件
 
     private var overlayControls: some View {
-        VStack {
-            HStack(spacing: 10) {
-                Spacer()
-                // 播放页专属：右上角横屏/全屏键（H5 在 iOS 上拿不到 orientation.lock）。
-                // 放在右上角是刻意的——右下角会压住播放器的时间/倍速显示，左上角会压住剧集标签。
-                if model.isPlayerPage {
-                    Button {
-                        model.togglePlayerFullscreen()
-                    } label: {
-                        Image(systemName: model.isLandscapeForced ? "arrow.down.right.and.arrow.up.left" : "arrow.up.left.and.arrow.down.right")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(.white)
-                            .frame(width: 34, height: 34)
-                            .background(Color.black.opacity(0.40))
-                            .clipShape(Circle())
-                            .overlay(Circle().stroke(Color.white.opacity(0.16), lineWidth: 0.5))
+        ZStack(alignment: .topTrailing) {
+            // 播放页：全屏键贴在 H5「速度键」右侧同一行（坐标由 JS 回传）；未回传时退回右上角
+            if model.isPlayerPage {
+                playerFullscreenButton
+            }
+
+            VStack {
+                HStack(spacing: 10) {
+                    Spacer()
+                    if AppConfig.isDebugBuild {
+                        Button {
+                            model.showSettings = true
+                        } label: {
+                            Image(systemName: "gearshape.fill")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(.white)
+                                .frame(width: 34, height: 34)
+                                .background(Color.black.opacity(0.45))
+                                .clipShape(Circle())
+                        }
+                        .accessibilityLabel("外壳设置")
                     }
-                    .opacity(0.55)
-                    .accessibilityLabel(model.isLandscapeForced ? "退出横屏" : "横屏播放")
                 }
-                if AppConfig.isDebugBuild {
-                    Button {
-                        model.showSettings = true
-                    } label: {
-                        Image(systemName: "gearshape.fill")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(.white)
-                            .frame(width: 34, height: 34)
-                            .background(Color.black.opacity(0.45))
-                            .clipShape(Circle())
-                    }
-                    .accessibilityLabel("外壳设置")
-                }
-            }
-            .padding(.horizontal, 12)
-            .padding(.top, 6)
+                .padding(.horizontal, 12)
+                .padding(.top, 6)
 
-            Spacer()
-
-            HStack {
                 Spacer()
-                // 长按左下角 1.2s 打开外壳诊断（Release 构建同样可用）
-                Color.clear
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
-                    .onLongPressGesture(minimumDuration: 1.2) { model.showSettings = true }
-            }
 
-            if let toastText {
-                ToastView(text: toastText)
-                    .padding(.bottom, 42)
-                    .id(toastToken)
+                HStack {
+                    Spacer()
+                    // 长按左下角 1.2s 打开外壳诊断（Release 构建同样可用）
+                    Color.clear
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                        .onLongPressGesture(minimumDuration: 1.2) { model.showSettings = true }
+                }
+
+                if let toastText {
+                    ToastView(text: toastText)
+                        .padding(.bottom, 42)
+                        .id(toastToken)
+                }
             }
+        }
+    }
+
+    /// 全屏键：优先贴在 H5 速度键右侧（同一行），拿不到坐标时退回右上角。
+    private var playerFullscreenButton: some View {
+        GeometryReader { geo in
+            let size = geo.size
+            let frame = model.playerControlsFrame
+            let side: CGFloat = 30
+            let x = frame.map { min(size.width - side / 2 - 6, max(side / 2 + 6, $0.maxX + 22)) }
+                ?? (size.width - 26)
+            let y = frame.map { min(size.height - side / 2 - 6, max(side / 2 + 6, $0.midY)) } ?? 46
+
+            Button {
+                model.togglePlayerFullscreen()
+            } label: {
+                Image(systemName: model.isLandscapeForced
+                      ? "arrow.down.right.and.arrow.up.left"
+                      : "arrow.up.left.and.arrow.down.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(width: side, height: side)
+                    .background(Color.black.opacity(0.35))
+                    .clipShape(Circle())
+                    .overlay(Circle().stroke(Color.white.opacity(0.18), lineWidth: 0.5))
+            }
+            .opacity(0.62)
+            .position(x: x, y: y)
+            .accessibilityLabel(model.isLandscapeForced ? "退出全屏" : "全屏播放")
         }
     }
 

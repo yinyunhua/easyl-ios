@@ -13,13 +13,14 @@ import WebKit
 @MainActor
 final class WebBridge: NSObject, WKScriptMessageHandler {
 
-    /// 调用描述。跨任务传递时只含字符串/布尔等 Sendable 值。
+    /// 调用描述。跨任务传递时只含字符串/布尔/数值等 Sendable 值。
     struct Call: Sendable {
         var id: String?
         var method: String
         var s0: String?
         var s1: String?
         var b0: Bool?
+        var nums: [Double] = []
     }
 
     private weak var model: ShellModel?
@@ -96,6 +97,19 @@ final class WebBridge: NSObject, WKScriptMessageHandler {
             model.exitPlayerFullscreen()
             resolve(id: call.id, value: true)
 
+        case "playerControls":
+            // 页面把 H5 速度键的坐标回传上来：原生全屏键据此贴在它右侧同一行
+            if call.nums.count >= 4 {
+                model.updatePlayerControlsFrame(
+                    x: call.nums[0],
+                    y: call.nums[1],
+                    width: call.nums[2],
+                    height: call.nums[3],
+                    viewportWidth: call.nums.count >= 5 ? call.nums[4] : 0
+                )
+            }
+            resolve(id: call.id, value: true)
+
         case "openUrl":
             let raw = (call.s0 ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
             guard !raw.isEmpty, let url = URL(string: raw) else {
@@ -151,8 +165,18 @@ final class WebBridge: NSObject, WKScriptMessageHandler {
             method: method,
             s0: Self.string(args, 0),
             s1: Self.string(args, 1),
-            b0: Self.bool(args, 0)
+            b0: Self.bool(args, 0),
+            nums: Self.numbers(args)
         )
+    }
+
+    nonisolated private static func numbers(_ args: [Any]) -> [Double] {
+        args.compactMap { value -> Double? in
+            if let d = value as? Double { return d }
+            if let n = value as? NSNumber { return n.doubleValue }
+            if let s = value as? String { return Double(s) }
+            return nil
+        }
     }
 
     nonisolated private static func string(_ args: [Any], _ index: Int) -> String? {

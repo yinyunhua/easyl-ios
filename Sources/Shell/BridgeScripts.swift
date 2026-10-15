@@ -540,7 +540,10 @@ enum BridgeScripts {
                   'html.hg-immersive,html.hg-immersive body{background:#000!important;overflow:hidden!important}'+
                   '.hg-immersive-hidden{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;height:0!important;overflow:hidden!important}'+
                   '.hg-player-box{height:100vh!important;max-height:100vh!important;margin:0!important;padding:0!important;background:#000!important}'+
-                  '.hg-fill-video{width:100%!important;max-width:100%!important;height:auto!important;max-height:100%!important;object-fit:contain!important;margin:0 auto!important}';
+                  '.hg-fill-video{width:100%!important;max-width:100%!important;height:auto!important;max-height:100%!important;object-fit:contain!important;margin:0 auto!important}'+
+                  '.hg-controls-pinned{opacity:1!important;visibility:visible!important;transform:none!important;pointer-events:auto!important;transition:none!important}'+
+                  '.hg-speed-shifted{margin-right:44px!important}'+
+                  '.hg-strip-bottom{bottom:0!important;z-index:6!important}';
                 (document.head||document.documentElement).appendChild(s);
               }catch(e){}
             }
@@ -590,15 +593,20 @@ enum BridgeScripts {
             }
             function playerBox(v){
               try{
-                var node=v, best=null, guard=0;
                 var vw=window.innerWidth||0;
-                while(node&&node!==document.body&&guard<8){
+                var vh=v?v.getBoundingClientRect().height:0;
+                var node=v?v.parentNode:null;
+                var fallback=null,guard=0;
+                while(node&&node!==document.body&&guard<6){
                   var r=node.getBoundingClientRect();
-                  if(r.width>=vw*0.75){best=node;}
+                  if(r.width>=vw*0.75){
+                    if(!fallback){fallback=node;}                       // 最近的一个满宽祖先作为兜底
+                    if(r.height>=vh+8){return node;}                    // 能装下视频 → 就用它（不再往外套）
+                  }
                   node=node.parentNode; guard++;
                 }
-                return best||(v?v.parentNode:null);
-              }catch(e){return null;}
+                return fallback||(v?v.parentNode:null);
+              }catch(e){return v?v.parentNode:null;}
             }
             function textOf(el){
               try{
@@ -701,21 +709,25 @@ enum BridgeScripts {
                 if(!v){return 'novideo';}
                 var box=playerBox(v)||v.parentNode;
                 if(!box){return 'nobox';}
-                var vr=v.getBoundingClientRect(), br=box.getBoundingClientRect();
+                // 关键：先把「我们自己施加过的位移」扣掉再测量，否则每次重算都会看到自己造成的变化 → 上下晃动
+                var applied=(typeof v.__hgNudge==='number')?v.__hgNudge:0;
+                var vr=v.getBoundingClientRect();
+                var baseTop=vr.top-applied;
+                var baseCenter=baseTop+vr.height/2;
+                var br=box.getBoundingClientRect();
                 var vh=window.innerHeight||0;
                 var targetY=immActive?(br.top+br.height/2):(vh/2);
-                var dy=targetY-(vr.top+vr.height/2);
+                var dy=targetY-baseCenter;
                 if(!isFinite(dy)){dy=0;}
-                // 幅度上限：最多挪视口高度的 25%，绝不把视频推出可视区
                 var limit=Math.max(0,vh*0.25);
-                if(dy>limit){dy=limit;}
-                if(dy<-limit){dy=-limit;}
-                var slackUp=Math.max(0,vr.top-br.top);
-                var slackDown=Math.max(0,(br.top+br.height)-(vr.top+vr.height));
+                dy=Math.max(-limit,Math.min(limit,dy));
+                var slackUp=Math.max(0,baseTop-br.top);
+                var slackDown=Math.max(0,(br.top+br.height)-(baseTop+vr.height));
                 dy=(dy<0)?Math.max(dy,-slackUp):Math.min(dy,slackDown);
-                if(Math.abs(dy)<6){dy=0;}
+                if(Math.abs(dy-applied)<3){ return 'keep='+Math.round(applied); }
+                v.__hgNudge=dy;
                 nudgeVideo(v,dy);
-                if(!videoVisible()){ nudgeVideo(v,0); return 'rollback'; }
+                if(!videoVisible()){ v.__hgNudge=0; nudgeVideo(v,0); return 'rollback'; }
                 return 'dy='+Math.round(dy);
               }catch(e){return 'err';}
             }
@@ -767,6 +779,172 @@ enum BridgeScripts {
               }catch(e){}
             }
 
+
+            // ==================== 播放器调优（竖屏）：控件常显 / 选集条下移 / 满宽渲染 / 稳定居中 ====================
+            var pinnedRow=null, pinnedStrip=null, lastLayoutSig='', speedEl=null, postSeq2=0;
+
+            function playerTuning(){
+              try{ return window.__HG_PLAYER_TUNE__===undefined?true:!!window.__HG_PLAYER_TUNE__; }catch(e){ return true; }
+            }
+            function postNative(method,args){
+              try{
+                postSeq2++;
+                window.webkit.messageHandlers.HuangGuoNative.postMessage(JSON.stringify({id:'layout'+postSeq2,method:method,args:args||[]}));
+              }catch(e){}
+            }
+            function playerSig(){
+              try{
+                var v=biggestVideo();
+                if(!v){return 'novideo';}
+                var box=playerBox(v)||v.parentNode;
+                if(!box){return 'nobox';}
+                var br=box.getBoundingClientRect(), vr=v.getBoundingClientRect();
+                return [playerActive?1:0,immActive?1:0,window.innerWidth,window.innerHeight,
+                        Math.round(br.top),Math.round(br.height),Math.round(vr.width),Math.round(vr.height),playerTuning()?1:0].join(',');
+              }catch(e){return 'sigerr';}
+            }
+            function findControlsRow(box){
+              try{
+                var vh=window.innerHeight||0;
+                if(!box||!box.querySelectorAll){return null;}
+                var nodes=box.querySelectorAll('div,section,footer,ul');
+                var best=null,bestH=1e9;
+                for(var i=0;i<nodes.length;i++){
+                  var el=nodes[i];
+                  var r=el.getBoundingClientRect();
+                  if(!r.height||r.height>vh*0.22){continue;}
+                  if(r.top<vh*0.45){continue;}
+                  var t=(el.innerText||el.textContent||'');
+                  if(t.length>200||!/\d{1,2}:\d{2}/.test(t)){continue;}
+                  if(r.height<bestH){bestH=r.height;best=el;}
+                }
+                return best;
+              }catch(e){return null;}
+            }
+            function findSpeedEl(box){
+              try{
+                if(!box||!box.querySelectorAll){return null;}
+                var nodes=box.querySelectorAll('span,div,p,button,a');
+                for(var i=0;i<nodes.length;i++){
+                  var el=nodes[i];
+                  var t=(el.textContent||'').trim();
+                  if(!/^[0-9](\.[0-9])?x$/i.test(t)){continue;}
+                  var r=el.getBoundingClientRect();
+                  if(r.width>0&&r.height>0){return el;}
+                }
+              }catch(e){}
+              return null;
+            }
+            function findStripEl(box){
+              try{
+                var vh=window.innerHeight||0, vw=window.innerWidth||0;
+                var scopes=[];
+                if(box&&box.parentNode){scopes.push(box.parentNode);}
+                if(document.body){scopes.push(document.body);}
+                for(var s=0;s<scopes.length;s++){
+                  var nodes=(scopes[s]&&scopes[s].querySelectorAll)?scopes[s].querySelectorAll('div,section,footer'):[];
+                  var best=null,bestH=1e9;
+                  for(var i=0;i<nodes.length;i++){
+                    var el=nodes[i];
+                    var r=el.getBoundingClientRect();
+                    if(!r.height||r.height>vh*0.14){continue;}
+                    if(r.width<vw*0.6){continue;}
+                    var t=(el.innerText||el.textContent||'');
+                    if(t.indexOf('选集')<0||t.length>140){continue;}
+                    if(r.height<bestH){bestH=r.height;best=el;}
+                  }
+                  if(best){return best;}
+                }
+              }catch(e){}
+              return null;
+            }
+            function pinControls(){
+              try{
+                var v=biggestVideo();
+                if(!v){return null;}
+                var box=playerBox(v)||v.parentNode;
+                var row=findControlsRow(box);
+                if(row&&row.classList){
+                  if(!row.classList.contains('hg-controls-pinned')){ row.classList.add('hg-controls-pinned'); }
+                  pinnedRow=row;
+                }
+                return row;
+              }catch(e){return null;}
+            }
+            function reserveStripSpace(row){
+              try{
+                var v=biggestVideo();
+                if(!v){return 0;}
+                var box=playerBox(v)||v.parentNode;
+                var strip=findStripEl(box);
+                if(!strip){return 0;}
+                if(strip.classList&&!strip.classList.contains('hg-strip-bottom')){ strip.classList.add('hg-strip-bottom'); }
+                pinnedStrip=strip;
+                var sr=strip.getBoundingClientRect();
+                if(!sr.height||sr.height<4){return 0;}
+                var pad=Math.round(sr.height)+4;
+                if(box&&box.style&&box.__hgStripPad!==pad){
+                  var cs=window.getComputedStyle?window.getComputedStyle(box):null;
+                  var borderBox=!cs||cs.boxSizing==='border-box';
+                  var br=box.getBoundingClientRect();
+                  if(borderBox||br.height<=pad){
+                    box.style.paddingBottom=pad+'px';
+                  }else{
+                    box.style.height=Math.round(br.height-pad)+'px';
+                    box.style.paddingBottom=pad+'px';
+                  }
+                  box.__hgStripPad=pad;
+                }
+                return pad;
+              }catch(e){return 0;}
+            }
+            function shiftSpeedAndReport(){
+              try{
+                var v=biggestVideo();
+                if(!v){return;}
+                var box=playerBox(v)||v.parentNode;
+                var el=findSpeedEl(box);
+                if(!el){return;}
+                speedEl=el;
+                if(!el.classList.contains('hg-speed-shifted')){ el.classList.add('hg-speed-shifted'); }
+                var r=el.getBoundingClientRect();
+                postNative('playerControls',[Math.round(r.left),Math.round(r.top),Math.round(r.width),Math.round(r.height),Math.round(window.innerWidth)]);
+              }catch(e){}
+            }
+            function keepPins(){
+              // 轻量维持：只补类，不做任何测量，避免播放中强制回流
+              try{
+                if(pinnedRow&&pinnedRow.classList&&!pinnedRow.classList.contains('hg-controls-pinned')){
+                  pinnedRow.classList.add('hg-controls-pinned');
+                }
+                if(pinnedStrip&&pinnedStrip.classList&&!pinnedStrip.classList.contains('hg-strip-bottom')){
+                  pinnedStrip.classList.add('hg-strip-bottom');
+                }
+                if(speedEl&&speedEl.classList&&!speedEl.classList.contains('hg-speed-shifted')){
+                  speedEl.classList.add('hg-speed-shifted');
+                }
+              }catch(e){}
+            }
+            function layoutPlayer(force){
+              if(!playerActive){return 'not-player';}
+              try{
+                var sig=playerSig();
+                if(!force&&sig===lastLayoutSig){ keepPins(); return 'keep'; }
+                lastLayoutSig=sig;
+                if(!playerTuning()){ return 'tuning-off'; }
+                var v=biggestVideo();
+                if(v&&v.classList&&!immActive&&!v.classList.contains('hg-fill-video')){
+                  v.classList.add('hg-fill-video');   // 竖屏也按满宽渲染 → 更清晰
+                }
+                var row=pinControls();
+                reserveStripSpace(row);
+                shiftSpeedAndReport();
+                centerVideo();
+                return 'layout';
+              }catch(e){return 'err';}
+            }
+            window.HGApp.layoutPlayer=layoutPlayer;
+            window.HGApp.setPlayerTuning=function(on){ window.__HG_PLAYER_TUNE__=!!on; lastLayoutSig=''; return layoutPlayer(true); };
             function playerDiag(){
               try{
                 var vs=document.querySelectorAll('video');
@@ -779,7 +957,11 @@ enum BridgeScripts {
                   hidden:hiddenNodes.length,
                   rollback:(window.HGApp&&window.HGApp.__lastRollback)||'',
                   player:playerActive,
-                  immersive:immActive
+                  immersive:immActive,
+                  tuning:playerTuning(),
+                  pinned:!!pinnedRow,
+                  strip:!!pinnedStrip,
+                  nudge:(function(){try{var v=biggestVideo();return v&&typeof v.__hgNudge==='number'?Math.round(v.__hgNudge):0;}catch(e){return 0;}})()
                 });
               }catch(e){ return '{}'; }
             }
@@ -911,7 +1093,12 @@ enum BridgeScripts {
                   killExternalIconGrid();
                   killAdMarkers();
                 }
-                if(!playerActive){ fixVideoLayout(); }
+                if(playerActive){
+                  keepPins();
+                  if(!playing){ layoutPlayer(false); }   // 正在播放时不做任何测量，避免拖进度被打断
+                }else{
+                  fixVideoLayout();
+                }
               }catch(e){}
             }
             function scheduleSweep(immediate){
@@ -925,7 +1112,6 @@ enum BridgeScripts {
                   if(now-lastSweep<MIN_INTERVAL && !immediate){ return; }
                   lastSweep=now;
                   runSweep();
-                  if(playerActive){ centerVideo(); }
                 },delay);
               }catch(e){ sweepPending=false; }
             }
@@ -960,6 +1146,13 @@ enum BridgeScripts {
     static func extraAdsFlagJS(_ enabled: Bool) -> String {
         ##"""
         window.__HG_EXTRA_ADS__=\##(enabled ? "true" : "false");
+        """##
+    }
+
+    /// 播放器调优开关（控件常显 / 选集条下移 / 速度键让位 / 满宽渲染），设置页可实时切换。
+    static func playerTuneFlagJS(_ enabled: Bool) -> String {
+        ##"""
+        window.__HG_PLAYER_TUNE__=\##(enabled ? "true" : "false");
         """##
     }
 

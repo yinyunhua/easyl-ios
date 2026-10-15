@@ -47,6 +47,8 @@ struct WebShellView: UIViewRepresentable {
         let startScripts = [
             "window.__HG_NATIVE_APP__=1;",
             BridgeScripts.extraAdsFlagJS(AppConfig.extraAdsEnabled),
+            BridgeScripts.playerExtraFlagJS(AppConfig.playerExtraEnabled),
+            BridgeScripts.playerTuneFlagJS(AppConfig.playerTuneEnabled),
             BridgeScripts.bridgeJS(appVersion: AppConfig.appVersion,
                                    apiBase: AppConfig.apiSeed,
                                    apiBaseBackup: AppConfig.apiSeedBackup),

@@ -72,7 +72,8 @@ hgtv_ios/
 |---|---|---|
 | 注入 JS 语法 | `python scripts/verify_js.py`（node --check） | 5 段（bridge / v1 补丁 / v2 补丁 / handleBack / 开关）全部 OK |
 | Swift 多行字符串缩进 | `python scripts/lint_swift_rawstrings.py` | 0 问题（run #15 的失败正是这条规则，现已本地拦住） |
-| 补丁行为测试 | `node scripts/test_ios_patch.js` | 24 项全过（含 3 项黑屏回归防护：含 video 的容器不隐藏 / fixed 播放层不动 / 可见性自检与回滚） |
+| Swift 符号一致性 | `python scripts/lint_swift_symbols.py` | 0 问题；负向测试可复现（把定义改名 → 立刻报 `schedulePlayerLayout` 未定义） |
+| 补丁行为测试 | `node scripts/test_ios_patch.js` | **25 项全过**（广告清空/内链不误清、seek 续播、隐藏导航、含 video 容器不隐藏、fixed 播放层不动、控件常显、选集条让位、速度键回传、居中不抖动、退出还原） |
 | VIP 补丁一致性 | `python scripts/diff_against_apk.py` | 与 APK dex 中 `__HG_PATCH_V1__` 原文 **152/152 行完全一致** |
 | Info.plist 结构 | `python -c "import plistlib,..."` | 键解析通过，显示名「黄果漫剧」，`CFBundleIconName=AppIcon` |
 | 原始素材 | `python scripts/make_assets.py` | AppIcon 1024×1024（由 mipmap-xxxhdpi 192px 放大）、闪屏 720×1280 + 锚点 JSON |

@@ -91,6 +91,14 @@ struct SettingsView: View {
                             showToast(newValue ? "已开启播放页沉浸式" : "已关闭播放页沉浸式")
                         }
                     ))
+                    Toggle("播放器调优（控件常显 / 选集条让位 / 画面满宽更清晰 / 居中不抖动）", isOn: Binding(
+                        get: { AppConfig.playerTuneEnabled },
+                        set: { newValue in
+                            AppConfig.setPlayerTuneEnabled(newValue)
+                            model.applyPlayerTuning()
+                            showToast(newValue ? "已开启播放器调优" : "已关闭播放器调优")
+                        }
+                    ))
                     Button("立即清扫 + 重排播放器") {
                         model.applyExtraAdsSetting()
                         showToast("已执行")

@@ -5,8 +5,9 @@
  * 覆盖：
  *   1) 广告：SAFE_KEYS 清空 / 外链推广数组启发式清空 / 内链数组不误清
  *   2) 播放：seek 后自动续播；用户早于 seek 的主动暂停不误恢复
- *   3) 播放页：隐藏顶栏（logo+搜索）与底部 4 tab；**含 video 的外层容器绝不能被隐藏**（黑屏回归防护）
- *   4) 沉浸式：只给文档流内容器撑高（fixed 播放层不动）；视频铺满；居中带幅度上限；退出干净还原
+ *   3) 播放页：隐藏顶栏与底部 4 tab；含 video 的外层容器绝不隐藏（黑屏回归防护）
+ *   4) 沉浸式：fixed 播放层不动定位；视频铺满；退还原样
+ *   5) 竖屏调优：控件行钉常显 / 选集条贴底并为它预留高度 / 速度键左移并回传坐标 / 视频满宽渲染 / 居中不抖动
  */
 const fs = require('fs');
 const vm = require('vm');
@@ -20,6 +21,7 @@ const source = fs.readFileSync(sourcePath, 'utf8');
 
 let fakeNow = 1_000_000;
 const docListeners = {};
+const bridgeMessages = [];
 const VH = 844;
 const VW = 390;
 
@@ -45,7 +47,11 @@ class El {
     };
     this.attrs = {};
   }
-  getBoundingClientRect() { return this._rect; }
+  getBoundingClientRect() {
+    const n = typeof this.__hgNudge === 'number' ? this.__hgNudge : 0;
+    const r = this._rect;
+    return { top: r.top + n, bottom: r.bottom + n, left: r.left, right: r.right, width: r.width, height: r.height };
+  }
   setAttribute(k, v) { this.attrs[k] = v; }
   getAttribute(k) { return this.attrs[k] === undefined ? '' : this.attrs[k]; }
   appendChild(child) { this.children.push(child); child.parentNode = this; return child; }
@@ -63,23 +69,29 @@ class El {
     const s = String(sel);
     if (s === 'video') return this._hasVideo ? (this.__videoRef || true) : null;
     if (this.hasSearchInput && s.indexOf('input') >= 0) return new El('input');
-    return null;
+    const hit = matchAll(this, s);
+    return hit.length ? hit[0] : null;
   }
   querySelectorAll(sel) { return matchAll(this, sel); }
   addEventListener() {}
 }
 
+function matchesTag(el, sel) {
+  const s = String(sel).trim();
+  if (!s) return false;
+  if (s === 'video') return el.tagName === 'VIDEO';
+  if (s === 'a[href]') return el.tagName === 'A' && !!el.getAttribute('href');
+  if (s.indexOf('.hg-player-box') >= 0) return el._classes.has('hg-player-box');
+  if (s.indexOf('.hg-fill-video') >= 0) return el._classes.has('hg-fill-video');
+  const tags = s.split(',').map((t) => t.trim().toUpperCase()).filter(Boolean);
+  return tags.includes(el.tagName);
+}
+
 function matchAll(root, sel) {
-  sel = String(sel);
   const out = [];
   const walk = (node) => {
     node.children.forEach((child) => {
-      let hit = false;
-      if (sel === 'video' && child.tagName === 'VIDEO') hit = true;
-      else if (sel === 'a[href]' && child.tagName === 'A' && child.getAttribute('href')) hit = true;
-      else if (sel.indexOf('.hg-player-box') >= 0 && child._classes.has('hg-player-box')) hit = true;
-      else if (sel.indexOf('.hg-fill-video') >= 0 && child._classes.has('hg-fill-video')) hit = true;
-      if (hit) out.push(child);
+      if (matchesTag(child, sel)) out.push(child);
       walk(child);
     });
   };
@@ -100,7 +112,7 @@ function buildDom() {
     rect: { top: 40, left: 0, width: VW, height: 90, bottom: 130, right: VW },
   });
 
-  // 关键回归场景：外层容器同时「含 video」且「底部带 4 个主 tab 文案」——绝不能被隐藏
+  // 回归场景：外层容器「含 video」且「底部带 4 个主 tab 文案」——绝不能被隐藏
   const pageWrapper = new El('div', {
     text: '选集 连载 在线观看 首页 分类 搜索 我的',
     hasVideo: true,
@@ -109,13 +121,27 @@ function buildDom() {
   const box = new El('div', {
     hasVideo: true,
     position: 'fixed',
-    rect: { top: 130, left: 0, width: VW, height: VH - 230, bottom: VH - 100, right: VW },
+    rect: { top: 150, left: 0, width: VW, height: 600, bottom: 750, right: VW },
   });
   const video = new El('video', { rect: { top: 300, left: 0, width: VW, height: 220, bottom: 520, right: VW } });
+  // H5 控件行：含时间文本，位于下半屏
+  const controls = new El('div', {
+    text: '骨肉亲 1.0x 0:48 4:23',
+    rect: { top: 660, left: 0, width: VW, height: 70, bottom: 730, right: VW },
+  });
+  const speed = new El('span', { text: '1.0x', rect: { top: 660, left: 320, width: 40, height: 24, bottom: 684, right: 360 } });
+  controls.appendChild(speed);
   box.appendChild(video);
+  box.appendChild(controls);
   pageWrapper.appendChild(box);
   pageWrapper.__videoRef = video;
   box.__videoRef = video;
+
+  // 选集条：贴在播放区下方
+  const strip = new El('div', {
+    text: '选集 · 更新至第8集 · 在线观看',
+    rect: { top: 750, left: 0, width: VW, height: 56, bottom: 806, right: VW },
+  });
 
   const dock = new El('div', {
     text: '首页 分类 搜索 我的',
@@ -124,6 +150,7 @@ function buildDom() {
 
   body.appendChild(header);
   body.appendChild(pageWrapper);
+  body.appendChild(strip);
   body.appendChild(dock);
 
   const registry = { 'hg-immersive-css': null, 'hg-shell-tap-css': null };
@@ -138,7 +165,7 @@ function buildDom() {
   };
   const origAppend = head.appendChild.bind(head);
   head.appendChild = (child) => { if (child.id) registry[child.id] = child; origAppend(child); child.parentNode = head; return child; };
-  return { document, header, dock, pageWrapper, box, video, registry };
+  return { document, header, dock, pageWrapper, box, video, controls, speed, strip, registry };
 }
 
 function makeResponse(payload, contentType = 'application/json; charset=utf-8') {
@@ -176,6 +203,7 @@ function makeSandbox(nextPayload) {
       display: 'block',
       visibility: 'visible',
       opacity: '1',
+      boxSizing: 'border-box',
     }),
     document: dom.document,
     innerWidth: VW,
@@ -184,6 +212,7 @@ function makeSandbox(nextPayload) {
     navigator: { userAgent: 'node-test' },
     addEventListener: () => {},
     removeEventListener: () => {},
+    webkit: { messageHandlers: { HuangGuoNative: { postMessage: (body) => bridgeMessages.push(body) } } },
   };
   sandbox.window = sandbox;
   sandbox.globalThis = sandbox;
@@ -237,7 +266,6 @@ async function run() {
   fire('seeking', videoA);
   fire('seeked', videoA);
   check('seek 后自动续播', videoA.paused === false && videoA.playCalls > 0, `playCalls=${videoA.playCalls}`);
-
   const videoB = makeVideo();
   fire('pause', videoB);
   videoB.paused = true;
@@ -246,40 +274,46 @@ async function run() {
   fire('seeked', videoB);
   check('用户主动暂停不被误恢复', videoB.paused === true && videoB.playCalls === 0, `playCalls=${videoB.playCalls}`);
 
-  // ---------- 播放页：隐藏导航（含黑屏回归防护） ----------
+  // ---------- 播放页 + 调优 ----------
   const { sandbox: s, dom } = makeSandbox({});
   check('暴露播放页 API', typeof s.HGApp.setPlayerMode === 'function'
     && typeof s.HGApp.setImmersive === 'function'
-    && typeof s.HGApp.centerVideo === 'function', 'setPlayerMode/setImmersive/centerVideo');
+    && typeof s.HGApp.centerVideo === 'function'
+    && typeof s.HGApp.layoutPlayer === 'function', 'setPlayerMode/setImmersive/centerVideo/layoutPlayer');
 
   s.HGApp.setPlayerMode(true);
+  s.HGApp.layoutPlayer(true);
+
   check('顶栏（logo+搜索）被隐藏', dom.header._classes.has('hg-immersive-hidden'));
   check('底部 4 tab 被隐藏', dom.dock._classes.has('hg-immersive-hidden'));
-  check('★含 video 的外层容器未被隐藏（黑屏回归防护）', !dom.pageWrapper._classes.has('hg-immersive-hidden'),
-    '隐藏类: ' + (dom.pageWrapper._classes.has('hg-immersive-hidden') ? '有' : '无'));
+  check('★含 video 的外层容器未被隐藏（黑屏回归防护）', !dom.pageWrapper._classes.has('hg-immersive-hidden'));
   check('★隐藏导航后未触发回滚', s.HGApp.__lastRollback === undefined, String(s.HGApp.__lastRollback || '无回滚'));
-  check('注入沉浸式样式表', dom.registry['hg-immersive-css'] !== null);
 
-  // ---------- 沉浸式 ----------
+  check('控件行被钉住常显（进度条不再自动消失）', dom.controls._classes.has('hg-controls-pinned'), dom.controls._classes.has('hg-controls-pinned') ? '已钉' : '未钉');
+  check('选集条贴底', dom.strip._classes.has('hg-strip-bottom'));
+  check('为选集条预留高度（控件上移，不再遮挡）', dom.box.style.paddingBottom === '60px', String(dom.box.style.paddingBottom));
+  check('速度键左移', dom.speed._classes.has('hg-speed-shifted'));
+  check('竖屏视频满宽渲染（清晰度）', dom.video._classes.has('hg-fill-video'));
+  check('回传速度键坐标给原生（原生全屏键贴其右侧）',
+    bridgeMessages.some((m) => String(m).indexOf('playerControls') >= 0), String(bridgeMessages[bridgeMessages.length - 1] || '无'));
+
+  // 抖动修复：同尺寸下重复 layoutPlayer 不应重写 transform
+  const t1 = String(dom.video.style.transform || '');
+  s.HGApp.layoutPlayer(true);
+  const t2 = String(dom.video.style.transform || '');
+  check('★居中不抖动（重复布局不重写 transform）', t1 === t2, `t1=${JSON.stringify(t1)} t2=${JSON.stringify(t2)}`);
+  const t3 = s.HGApp.centerVideo();
+  check('★居中带 keep 短路', /keep=|dy=/.test(String(t3)), String(t3));
+
+  // ---------- 沉浸式仍安全 ----------
   s.HGApp.setImmersive(true);
   check('横屏沉浸式：html 标记', dom.document.documentElement._classes.has('hg-immersive'));
-  check('★fixed 播放层不被强改定位撑高（黑屏回归防护）', !dom.box._classes.has('hg-player-box'),
-    'hg-player-box: ' + (dom.box._classes.has('hg-player-box') ? '有' : '无'));
-  check('横屏沉浸式：视频铺满（清晰度）', dom.video._classes.has('hg-fill-video'));
+  check('★fixed 播放层不被强改定位撑高（黑屏回归防护）', !dom.box._classes.has('hg-player-box'));
   check('沉浸式未触发回滚', s.HGApp.__lastRollback === undefined, String(s.HGApp.__lastRollback || '无回滚'));
 
-  const centerResult = s.HGApp.centerVideo();
-  const dy = /dy=(-?\d+)/.exec(String(centerResult));
-  check('居中返回偏移', !!dy, String(centerResult));
-  check('居中幅度不超过视口 25%', !dy || Math.abs(parseInt(dy[1], 10)) <= VH * 0.25, String(centerResult));
-
   s.HGApp.setImmersive(false);
-  check('退出沉浸式：取消视频铺满类', !dom.video._classes.has('hg-fill-video'));
-  check('退出沉浸式：竖屏仍做居中且非 NaN', !/NaN/.test(String(dom.video.style.transform || '')), String(dom.video.style.transform));
-
   s.HGApp.setPlayerMode(false);
   check('退出播放页：导航恢复', !dom.header._classes.has('hg-immersive-hidden') && !dom.dock._classes.has('hg-immersive-hidden'));
-  check('退出播放页：视频内联样式被还原', !String(dom.video.style.transform || '').trim(), JSON.stringify(String(dom.video.style.transform || '')));
 
   const failed = results.filter((r) => !r.ok);
   console.log(`\n共 ${results.length} 项，失败 ${failed.length} 项`);

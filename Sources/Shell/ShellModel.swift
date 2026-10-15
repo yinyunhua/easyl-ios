@@ -37,6 +37,8 @@ final class ShellModel: ObservableObject {
     @Published private(set) var isPlayerPage = false
     /// 是否已锁定横屏（播放态）
     @Published private(set) var isLandscapeForced = false
+    /// H5 播放器「速度键」的坐标（点）：原生全屏键据此贴到它右侧同一行
+    @Published private(set) var playerControlsFrame: CGRect?
     @Published private(set) var canGoBack = false
     @Published private(set) var loadProgress: Double = 0
     @Published var showSettings = false
@@ -285,7 +287,12 @@ final class ShellModel: ObservableObject {
         pullRefreshEnabled = !play
         if play != wasPlayer {
             setPlayerModeJS(play)
-            if play { verifyPlayerEnhancement() }
+            if play {
+                verifyPlayerEnhancement()
+                schedulePlayerLayout()
+            } else {
+                playerControlsFrame = nil
+            }
         }
         // 离开播放页时自动恢复竖屏，避免误锁横屏
         if !play, isLandscapeForced {
@@ -307,6 +314,49 @@ final class ShellModel: ObservableObject {
 
     private func centerVideoJS() {
         webView?.evaluateJavaScript("try{window.HGApp&&window.HGApp.centerVideo&&window.HGApp.centerVideo();}catch(e){}", completionHandler: nil)
+    }
+
+    /// 播放器调优布局（控件常显 / 选集条让位 / 速度键左移 / 满宽渲染 / 稳定居中）。
+    func layoutPlayerJS(force: Bool) {
+        guard isPlayerPage else { return }
+        let flag = force ? "true" : "false"
+        let js = "try{window.HGApp&&window.HGApp.layoutPlayer&&window.HGApp.layoutPlayer(" + flag + ");}catch(e){}"
+        webView?.evaluateJavaScript(js, completionHandler: nil)
+    }
+
+    /// 播放页渲染完成后分几次重排（H5 控件/选集条是异步出现的）。
+    func schedulePlayerLayout() {
+        for delay in [0.5, 1.4, 2.6, 4.0] {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                self?.layoutPlayerJS(force: true)
+            }
+        }
+    }
+
+    /// 页面回传速度键坐标（CSS px → 点：按视口宽度换算）。
+    func updatePlayerControlsFrame(x: Double, y: Double, width: Double, height: Double, viewportWidth: Double) {
+        guard viewportWidth > 1, let webView, webView.frame.width > 1 else { return }
+        let scale = webView.frame.width / CGFloat(viewportWidth)
+        guard scale.isFinite, scale > 0 else { return }
+        let frame = CGRect(x: CGFloat(x) * scale,
+                           y: CGFloat(y) * scale,
+                           width: CGFloat(width) * scale,
+                           height: CGFloat(height) * scale)
+        if let current = playerControlsFrame,
+           abs(current.midY - frame.midY) < 1, abs(current.maxX - frame.maxX) < 1 {
+            return
+        }
+        playerControlsFrame = frame
+    }
+
+    /// 调优开关即时生效。
+    func applyPlayerTuning() {
+        guard let webView else { return }
+        let on = AppConfig.playerTuneEnabled ? "true" : "false"
+        let js = BridgeScripts.playerTuneFlagJS(AppConfig.playerTuneEnabled)
+            + "try{window.HGApp&&window.HGApp.setPlayerTuning&&window.HGApp.setPlayerTuning(" + on + ");}catch(e){}"
+        webView.evaluateJavaScript(js, completionHandler: nil)
+        layoutPlayerJS(force: true)
     }
 
     /// 看门狗：进入播放页/沉浸式后读一次 JS 诊断，若视频不可见（或 JS 侧已回滚）就整体回退，
@@ -343,7 +393,7 @@ final class ShellModel: ObservableObject {
 
     /// 进播放态：隐藏 H5 导航 + 锁横屏 + 沉浸式铺满 + 优先进原生全屏播放。
     func enterPlayerFullscreen() {
-        AppOrientation.shared.lockLandscape()
+        AppOrientation.shared.unlock()   // 不再锁横屏：跟随设备方向（竖屏也能进系统全屏）
         isLandscapeForced = true
         setImmersiveJS(true)
         webView?.evaluateJavaScript(BridgeScripts.enterNativeFullscreenJS) { result, _ in
@@ -359,7 +409,7 @@ final class ShellModel: ObservableObject {
 
     /// 退出播放态：退出全屏 + 取消沉浸式 + 恢复竖屏。
     func exitPlayerFullscreen() {
-        AppOrientation.shared.lockPortrait()
+        AppOrientation.shared.unlock()
         isLandscapeForced = false
         setImmersiveJS(false)
         webView?.evaluateJavaScript(BridgeScripts.exitNativeFullscreenJS, completionHandler: nil)
@@ -598,10 +648,11 @@ final class ShellModel: ObservableObject {
         let promo = BridgeScripts.promoTokenJS(PromoBindStore.token())
         let extra = BridgeScripts.extraAdsFlagJS(AppConfig.extraAdsEnabled)
         let playerFlag = BridgeScripts.playerExtraFlagJS(AppConfig.playerExtraEnabled)
+        let tuneFlag = BridgeScripts.playerTuneFlagJS(AppConfig.playerTuneEnabled)
         let v2 = BridgeScripts.iosPatchJS(ownHosts: BridgeScripts.staticOwnHosts(includeDebugSeeds: SeedCatalog.usesDebugSeeds)
             + trustedHosts)
         webView.evaluateJavaScript(bridge, completionHandler: nil)
-        webView.evaluateJavaScript(cache + promo + extra + playerFlag, completionHandler: nil)
+        webView.evaluateJavaScript(cache + promo + extra + playerFlag + tuneFlag, completionHandler: nil)
         webView.evaluateJavaScript(BridgeScripts.patchJS, completionHandler: nil)
         webView.evaluateJavaScript(v2, completionHandler: nil)
         webView.evaluateJavaScript("try{window.HGApp&&window.HGApp.sweepAds&&window.HGApp.sweepAds();}catch(e){}", completionHandler: nil)
